@@ -3,10 +3,12 @@ import Head from 'next/head';
 import { getAllPosts } from '../lib/blogPosts';
 import BlogCard from '../components/BlogCard';
 import styles from '../styles/Home.module.css';
+import Loading from '../components/Loading';
+import Footer from '../components/Footer';
 
 const Map = dynamic(() => import('../components/Map'), {
   ssr: false,
-  loading: () => <div className={styles.loading}>Ładowanie mapy...</div>
+  loading: () => <Loading />
 });
 
 export default function Home({ posts }) {
@@ -56,6 +58,8 @@ export default function Home({ posts }) {
             </div>
           </section>
         </main>
+
+        <Footer />
       </div>
     </>
   );

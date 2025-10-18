@@ -8,6 +8,7 @@ import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
 import { getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
+import Loading from '../components/Loading';
 
 function MapInstructions() {
   const [showTip, setShowTip] = useState(true);
@@ -157,7 +158,7 @@ function VoronoiLayer({ stations, onStationClick, enabled }) {
   const [voronoiPolygons, setVoronoiPolygons] = useState([]);
 
   const updateVoronoi = () => {
-    if (!enabled || stations.length === 0) {
+    if (!enabled || stations.length < 5) {
       setVoronoiPolygons([]);
       return;
     }
@@ -262,7 +263,7 @@ function VoronoiLayer({ stations, onStationClick, enabled }) {
 
         const station = points[i][2];
         const limitedCell = [];
-        const MAX_DISTANCE_KM = 10;
+        const MAX_DISTANCE_KM = 5;
 
         for (const [x, y] of cell) {
           const latLng = map.layerPointToLatLng([x, y]);
@@ -403,10 +404,10 @@ export default function Map({ posts }) {
   }
 
   if (loading) {
-    return <div className={styles.loading}>Ładowanie danych o jakości powietrza...</div>;
+    return <Loading />;
   }
 
-  const showVoronoi = visibleCount <= 20 && visibleCount > 0;
+  const showVoronoi = visibleCount >= 2 && visibleCount <= 25;
   const showClusters = !showVoronoi;
 
   return (
@@ -430,13 +431,14 @@ export default function Map({ posts }) {
         {/* Przycisk statystyk WEWNĄTRZ MapContainer */}
         {showStatsButton && (
           <div className={styles.statsButtonWrapper}>
-            <button 
-              className={styles.statsButton}
-              onClick={() => setShowStatsPanel(true)}
-              title="Pokaż statystyki"
-            >
-              📊
-            </button>
+            <Link href="/stats">
+              <button 
+                className={styles.statsButton}
+                title="Pokaż statystyki"
+              >
+                📊
+              </button>
+            </Link>
           </div>
         )}
         
@@ -524,12 +526,6 @@ export default function Map({ posts }) {
         )}
       </MapContainer>
 
-      <StatsOverlay 
-        stats={stats} 
-        visible={showStatsPanel} 
-        onClose={() => setShowStatsPanel(false)}
-      />
-      
       <BlogFloatingCards posts={posts} />
 
       {selectedStation && (

@@ -54,8 +54,8 @@
 }
 
 .mapContainer {
-  height: calc(100vh - 70px);
-  min-height: 500px;
+  height: calc(100vh - 140px); /* Zwiększony margines na mobile dla mydełek */
+  min-height: 400px;
   width: 100%;
   position: relative;
 }

@@ -38,8 +38,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# PWA files - automatycznie generowane przez next-pwa
-public/sw.js
+# Pozostałości po next-pwa (service worker jest teraz utrzymywany ręcznie w public/sw.js)
 public/sw.js.map
 public/workbox-*.js
 public/workbox-*.js.map

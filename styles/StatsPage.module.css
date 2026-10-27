@@ -135,6 +135,10 @@
   gap: 1.5rem;
 }
 
+.rankingColumn {
+  min-width: 0;
+}
+
 .rankingColumn h3 {
   margin: 0 0 0.75rem;
   color: #374151;
@@ -142,7 +146,8 @@
 }
 
 .rankingList {
-  list-style: decimal inside;
+  list-style: none;
+  counter-reset: rank;
   margin: 0;
   padding: 0;
   display: flex;
@@ -160,8 +165,12 @@
   color: #374151;
 }
 
-.rankingItem::marker {
+.rankingItem::before {
+  counter-increment: rank;
+  content: counter(rank) ".";
+  min-width: 1.6rem;
   font-weight: 700;
+  color: #4b5563;
 }
 
 .rankingDot {
@@ -180,9 +189,7 @@
 }
 
 .rankingName strong {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 
 .rankingCity {

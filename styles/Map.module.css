@@ -12,7 +12,24 @@
   left: 50%;
   transform: translateX(-50%);
   z-index: 600;
+  width: max-content;
+  max-width: calc(100% - 24px);
+  pointer-events: none;
   animation: fadeInBounce 0.6s ease-out;
+}
+
+@media (max-width: 639px) {
+  /* Na wąskich ekranach dymek nie może zasłaniać przycisków ani punktów przy górnej krawędzi */
+  .instructionTip {
+    top: auto;
+    bottom: 70px;
+  }
+
+  .tipContent {
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.4;
+  }
 }
 
 @keyframes fadeInBounce {

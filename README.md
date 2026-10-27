@@ -19,16 +19,18 @@ SmogOFF to interaktywna aplikacja webowa do monitorowania jakości powietrza w c
 
 ## 🎨 Kolory jakości powietrza
 
+Progi pochodzą z [Europejskiego Indeksu Jakości Powietrza (EAQI)](https://airindex.eea.europa.eu/AQI/index.html) Europejskiej Agencji Środowiska (wartości godzinowe, zgodne z wytycznymi WHO 2021). Poziom stacji wyznacza gorszy z dwóch wskaźników.
+
 | Kolor | PM2.5 (µg/m³) | PM10 (µg/m³) | Jakość |
 |-------|---------------|--------------|--------|
-| 🟢 Zielony | 0 - 12 | 0 - 54 | Dobra |
-| 🟡 Żółty | 12.1 - 35.4 | 55 - 154 | Średnia |
-| 🟠 Pomarańczowy | 35.5 - 55.4 | 155 - 254 | Niezdrowa |
-| 🔴 Czerwony | 55.5 - 150.4 | 255 - 354 | Bardzo zła |
-| 🟣 Fioletowy | 150.5 - 250.4 | 355 - 424 | Niebezpieczna |
-| 🟤 Bordowy | 250.5+ | 425+ | Ekstremalnie zła |
+| 🟢 Zielony | 0 - 5 | 0 - 15 | Dobra |
+| 🟡 Limonkowy | 5 - 15 | 15 - 45 | Dość dobra |
+| 🟡 Żółty | 15 - 50 | 45 - 120 | Umiarkowana |
+| 🟠 Pomarańczowy | 50 - 90 | 120 - 195 | Zła |
+| 🔴 Czerwony | 90 - 140 | 195 - 270 | Bardzo zła |
+| 🟤 Bordowy | > 140 | > 270 | Ekstremalnie zła |
 
-*Normy oparte na standardach WHO/EPA*
+Pomiary starsze niż 3 godziny nie są pokazywane na mapie ani w rankingach.
 
 ## 🚀 Technologie
 

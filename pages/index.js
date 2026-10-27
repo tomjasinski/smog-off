@@ -1,10 +1,12 @@
 import dynamic from 'next/dynamic';
 import Head from 'next/head';
+import Link from 'next/link';
 import { getAllPosts } from '../lib/blogPosts';
 import BlogCard from '../components/BlogCard';
 import styles from '../styles/Home.module.css';
 import Loading from '../components/Loading';
 import Footer from '../components/Footer';
+import { AQI_LEVEL_LIST } from '../lib/aqiLevels';
 
 const Map = dynamic(() => import('../components/Map'), {
   ssr: false,
@@ -23,28 +25,19 @@ export default function Home({ posts }) {
       </Head>
 
       <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>
+      <Link href="/stacje" className="skip-link" style={{ left: '220px' }}>Lista stacji (alternatywa dla mapy)</Link>
 
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.headerContent}>
             <h1>SmogOFF</h1>
             <div className={styles.legend}>
-              <span className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#4ade80'}}></span>
-                Dobra
-              </span>
-              <span className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#fbbf24'}}></span>
-                Średnia
-              </span>
-              <span className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#fb923c'}}></span>
-                Niezdrowa
-              </span>
-              <span className={styles.legendItem}>
-                <span className={styles.dot} style={{backgroundColor: '#ef4444'}}></span>
-                Zła
-              </span>
+              {AQI_LEVEL_LIST.map(({ level, color, label }) => (
+                <span key={level} className={styles.legendItem}>
+                  <span className={styles.dot} style={{backgroundColor: color}}></span>
+                  {label}
+                </span>
+              ))}
             </div>
           </div>
         </header>

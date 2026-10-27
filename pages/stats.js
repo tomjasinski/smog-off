@@ -2,7 +2,8 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVELS, calculateAQI } from '../lib/aqiLevels';
+import { AQI_LEVELS, AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import styles from '../styles/StatsPage.module.css';
 
 export default function StatsPage() {
@@ -137,6 +138,10 @@ export default function StatsPage() {
         <Link href="/" className={styles.backLink}>
           ← Powrót do mapy
         </Link>
+        {' · '}
+        <Link href="/stacje" className={styles.backLink}>
+          Lista wszystkich stacji
+        </Link>
 
         <article className={styles.article}>
           <h1>📊 Statystyki dla Polski</h1>
@@ -162,90 +167,36 @@ export default function StatsPage() {
           
           <div className={styles.aqiDistribution}>
             <h2>Jakość powietrza w Polsce</h2>
-            <div className={styles.aqiBar}>
-              <div 
-                className={styles.aqiSegment} 
-                style={{ 
-                  width: `${(stats.good / stats.total * 100)}%`, 
-                  backgroundColor: '#4ade80',
-
-                  color: getReadableTextColor('#4ade80')
-                }}
-                title={`Dobra: ${stats.good}`}
-              >
-                {stats.good > 0 && <span>{stats.good}</span>}
-              </div>
-              <div 
-                className={styles.aqiSegment} 
-                style={{ 
-                  width: `${(stats.moderate / stats.total * 100)}%`, 
-                  backgroundColor: '#fbbf24',
-
-                  color: getReadableTextColor('#fbbf24')
-                }}
-                title={`Średnia: ${stats.moderate}`}
-              >
-                {stats.moderate > 0 && <span>{stats.moderate}</span>}
-              </div>
-              <div 
-                className={styles.aqiSegment} 
-                style={{ 
-                  width: `${(stats.unhealthy / stats.total * 100)}%`, 
-                  backgroundColor: '#fb923c',
-
-                  color: getReadableTextColor('#fb923c')
-                }}
-                title={`Niezdrowa: ${stats.unhealthy}`}
-              >
-                {stats.unhealthy > 0 && <span>{stats.unhealthy}</span>}
-              </div>
-              <div 
-                className={styles.aqiSegment} 
-                style={{ 
-                  width: `${((stats.veryUnhealthy || 0) / stats.total * 100)}%`, 
-                  backgroundColor: '#ef4444',
-
-                  color: getReadableTextColor('#ef4444')
-                }}
-                title={`Bardzo zła: ${stats.veryUnhealthy || 0}`}
-              >
-                {(stats.veryUnhealthy || 0) > 0 && <span>{stats.veryUnhealthy}</span>}
-              </div>
-              <div 
-                className={styles.aqiSegment} 
-                style={{ 
-                  width: `${((stats.hazardous || 0) / stats.total * 100)}%`, 
-                  backgroundColor: '#a855f7',
-
-                  color: getReadableTextColor('#a855f7')
-                }}
-                title={`Niebezpieczna: ${stats.hazardous || 0}`}
-              >
-                {(stats.hazardous || 0) > 0 && <span>{stats.hazardous}</span>}
-              </div>
+            <div className={styles.aqiBar} role="img" aria-label="Rozkład stacji według jakości powietrza">
+              {AQI_LEVEL_LIST.map(({ level, color, label }) => {
+                const count = stats.levels[level] || 0;
+                return (
+                  <div
+                    key={level}
+                    className={styles.aqiSegment}
+                    style={{
+                      width: `${(count / stats.total * 100)}%`,
+                      backgroundColor: color,
+                      color: getReadableTextColor(color)
+                    }}
+                    title={`${label}: ${count}`}
+                  >
+                    {count > 0 && <span>{count}</span>}
+                  </div>
+                );
+              })}
             </div>
-            
+
             <div className={styles.statsLegend}>
-              <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{backgroundColor: '#4ade80'}}></span>
-                <span>Dobra: {stats.good} ({((stats.good / stats.total) * 100).toFixed(1)}%)</span>
-              </div>
-              <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{backgroundColor: '#fbbf24'}}></span>
-                <span>Średnia: {stats.moderate} ({((stats.moderate / stats.total) * 100).toFixed(1)}%)</span>
-              </div>
-              <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{backgroundColor: '#fb923c'}}></span>
-                <span>Niezdrowa: {stats.unhealthy} ({((stats.unhealthy / stats.total) * 100).toFixed(1)}%)</span>
-              </div>
-              <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{backgroundColor: '#ef4444'}}></span>
-                <span>Bardzo zła: {stats.veryUnhealthy || 0} ({(((stats.veryUnhealthy || 0) / stats.total) * 100).toFixed(1)}%)</span>
-              </div>
-              <div className={styles.legendRow}>
-                <span className={styles.legendDot} style={{backgroundColor: '#a855f7'}}></span>
-                <span>Niebezpieczna: {stats.hazardous || 0} ({(((stats.hazardous || 0) / stats.total) * 100).toFixed(1)}%)</span>
-              </div>
+              {AQI_LEVEL_LIST.map(({ level, color, label }) => {
+                const count = stats.levels[level] || 0;
+                return (
+                  <div key={level} className={styles.legendRow}>
+                    <span className={styles.legendDot} style={{backgroundColor: color}}></span>
+                    <span>{label}: {count} ({((count / stats.total) * 100).toFixed(1)}%)</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -279,37 +230,36 @@ export default function StatsPage() {
           )}
 
           <div className={styles.aqiLevelsSection}>
-            <h2>Normy PM2.5 (µg/m³)</h2>
+            <h2>Progi PM2.5 (µg/m³)</h2>
             <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm25.slice(0, -1).map((level, idx) => {
-                const prevMax = idx > 0 ? AQI_LEVELS.pm25[idx - 1].max + 0.1 : 0;
-                return (
-                  <div key={level.level} className={styles.levelRow}>
-                    <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                    <span className={styles.levelLabel}>{level.label}</span>
-                    <span className={styles.levelRange}>
-                      {prevMax.toFixed(1)} - {level.max.toFixed(1)}
-                    </span>
-                  </div>
-                );
-              })}
+              {AQI_LEVELS.pm25.map((level, idx) => (
+                <div key={level.level} className={styles.levelRow}>
+                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
+                  <span className={styles.levelLabel}>{level.label}</span>
+                  <span className={styles.levelRange}>{describeRange('pm25', idx)}</span>
+                </div>
+              ))}
             </div>
 
-            <h2 style={{ marginTop: '2rem' }}>Normy PM10 (µg/m³)</h2>
+            <h2 style={{ marginTop: '2rem' }}>Progi PM10 (µg/m³)</h2>
             <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm10.slice(0, -1).map((level, idx) => {
-                const prevMax = idx > 0 ? AQI_LEVELS.pm10[idx - 1].max + 1 : 0;
-                return (
-                  <div key={level.level} className={styles.levelRow}>
-                    <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                    <span className={styles.levelLabel}>{level.label}</span>
-                    <span className={styles.levelRange}>
-                      {prevMax.toFixed(0)} - {level.max.toFixed(0)}
-                    </span>
-                  </div>
-                );
-              })}
+              {AQI_LEVELS.pm10.map((level, idx) => (
+                <div key={level.level} className={styles.levelRow}>
+                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
+                  <span className={styles.levelLabel}>{level.label}</span>
+                  <span className={styles.levelRange}>{describeRange('pm10', idx)}</span>
+                </div>
+              ))}
             </div>
+
+            <p className={styles.rankingNote} style={{ marginTop: '1rem' }}>
+              Progi pochodzą z{' '}
+              <a href="https://airindex.eea.europa.eu/AQI/index.html" target="_blank" rel="noopener noreferrer">
+                Europejskiego Indeksu Jakości Powietrza (EAQI)<span className="sr-only"> (otwiera się w nowej karcie)</span>
+              </a>
+              {' '}Europejskiej Agencji Środowiska, opartego na wytycznych WHO z 2021 roku. Poziom stacji wyznacza gorszy z dwóch wskaźników (PM2.5 lub PM10).
+              {stats.excludedStale > 0 && ` Pominięto ${stats.excludedStale} stacji z pomiarem starszym niż ${MAX_DATA_AGE_HOURS} h.`}
+            </p>
           </div>
         </article>
       </div>

@@ -58,19 +58,22 @@ export default async function handler(req, res) {
           item.data?.pm10_avg
         );
         
+        const round1 = (value) => Math.round((value || 0) * 10) / 10;
+
         return {
-          id: item.school?.id || Math.random(),
+          // Stabilny identyfikator (wcześniej Math.random() zmieniał klucze Reacta)
+          id: item.school?.id || `${item.school?.latitude},${item.school?.longitude}`,
           name: item.school?.name || 'Nieznana lokalizacja',
           city: item.school?.city || '',
           street: item.school?.street || '',
           latitude: parseFloat(item.school?.latitude),
           longitude: parseFloat(item.school?.longitude),
           data: {
-            pm25: item.data?.pm25_avg || 0,
-            pm10: item.data?.pm10_avg || 0,
-            temperature: item.data?.temperature_avg || 0,
-            humidity: item.data?.humidity_avg || 0,
-            pressure: item.data?.pressure_avg || 0
+            pm25: round1(item.data?.pm25_avg),
+            pm10: round1(item.data?.pm10_avg),
+            temperature: round1(item.data?.temperature_avg),
+            humidity: round1(item.data?.humidity_avg),
+            pressure: round1(item.data?.pressure_avg)
           },
           aqi: aqi,
           timestamp: item.timestamp || new Date().toISOString()

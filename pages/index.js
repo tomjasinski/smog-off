@@ -18,6 +18,9 @@ export default function Home({ posts }) {
         <title>SmogOFF - mapa smogowa Polski</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
         <meta name="description" content="Monitoruj jakość powietrza w Polsce w czasie rzeczywistym" />
+        <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossOrigin="" />
+        <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossOrigin="" />
+        <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossOrigin="" />
       </Head>
 
       <div className={styles.container}>

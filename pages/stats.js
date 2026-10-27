@@ -2,7 +2,7 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVELS } from '../lib/aqiLevels';
+import { AQI_LEVELS, calculateAQI } from '../lib/aqiLevels';
 import styles from '../styles/StatsPage.module.css';
 
 export default function StatsPage() {
@@ -58,6 +58,52 @@ export default function StatsPage() {
     .sort((a, b) => a.data.pm25 - b.data.pm25 || a.data.pm10 - b.data.pm10);
   const cleanest = ranked.slice(0, RANKING_SIZE);
   const dirtiest = ranked.slice(-RANKING_SIZE).reverse();
+
+  // Ranking miast: mediana jest odporna na pojedyncze błędne czujniki, a małe miejscowości pomijamy
+  const MIN_STATIONS_PER_CITY = 3;
+  const median = (values) => {
+    const sorted = [...values].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+  };
+  const round1 = (v) => Math.round(v * 10) / 10;
+  const cityGroups = ranked.reduce((acc, s) => {
+    const city = s.city.trim();
+    if (!city) return acc;
+    (acc[city] = acc[city] || []).push(s);
+    return acc;
+  }, {});
+  const cities = Object.entries(cityGroups)
+    .filter(([, list]) => list.length >= MIN_STATIONS_PER_CITY)
+    .map(([city, list]) => {
+      const pm25 = round1(median(list.map(s => s.data.pm25)));
+      const pm10 = round1(median(list.map(s => s.data.pm10)));
+      return { city, count: list.length, pm25, pm10, aqi: calculateAQI(pm25, pm10) };
+    })
+    .sort((a, b) => a.pm25 - b.pm25 || a.pm10 - b.pm10);
+  const cleanestCities = cities.slice(0, RANKING_SIZE);
+  const dirtiestCities = cities.slice(-RANKING_SIZE).reverse();
+
+  const renderCityRanking = (title, list, id) => (
+    <section className={styles.rankingColumn} aria-labelledby={id}>
+      <h3 id={id}>{title}</h3>
+      <ol className={styles.rankingList}>
+        {list.map(c => (
+          <li key={c.city} className={styles.rankingItem}>
+            <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
+            <span className={styles.rankingName}>
+              <strong>{c.city}</strong>
+              <span className={styles.rankingCity}>stacji: {c.count}</span>
+            </span>
+            <span className={styles.rankingValues}>
+              <span>PM2.5: <strong>{c.pm25}</strong></span>
+              <span>PM10: <strong>{c.pm10}</strong></span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 
   const renderRanking = (title, list, id) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
@@ -213,6 +259,21 @@ export default function StatsPage() {
               <div className={styles.rankingGrid}>
                 {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best')}
                 {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst')}
+              </div>
+            </div>
+          )}
+
+          {cities.length > 0 && (
+            <div className={styles.rankingSection}>
+              <h2>Ranking miast</h2>
+              <p className={styles.rankingNote}>
+                Mediana odczytów ze wszystkich stacji w mieście (µg/m³), sortowana wg PM2.5.
+                Uwzględniamy miasta z co najmniej {MIN_STATIONS_PER_CITY} stacjami ({cities.length} miast).
+                Mediana jest odporna na pojedyncze błędne czujniki.
+              </p>
+              <div className={styles.rankingGrid}>
+                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best')}
+                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst')}
               </div>
             </div>
           )}

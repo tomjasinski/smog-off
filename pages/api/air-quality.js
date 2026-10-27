@@ -62,7 +62,8 @@ export default async function handler(req, res) {
 
         return {
           // Stabilny identyfikator (wcześniej Math.random() zmieniał klucze Reacta)
-          id: item.school?.id || `${item.school?.latitude},${item.school?.longitude}`,
+          // Różne szkoły mogą mieć te same współrzędne, więc nazwa też wchodzi do klucza
+          id: item.school?.id || `${item.school?.latitude},${item.school?.longitude},${item.school?.name || ''}`,
           name: item.school?.name || 'Nieznana lokalizacja',
           city: item.school?.city || '',
           street: item.school?.street || '',

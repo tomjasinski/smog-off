@@ -7,6 +7,8 @@ import styles from '../styles/StatsPage.module.css';
 
 export default function StatsPage() {
   const [stats, setStats] = useState(null);
+  const [stations, setStations] = useState([]);
+  const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +22,8 @@ export default function StatsPage() {
       
       if (result.stats) {
         setStats(result.stats);
+        setStations(result.data || []);
+        setUpdatedAt(result.data?.[0]?.timestamp || null);
       }
       setLoading(false);
     } catch (error) {
@@ -46,6 +50,35 @@ export default function StatsPage() {
       </div>
     );
   }
+
+  const RANKING_SIZE = 10;
+  const ranked = stations
+    // Odczyty poniżej 1 µg/m³ (PM2.5 lub PM10) traktujemy jako podejrzane i pomijamy w rankingu
+    .filter(s => s.data.pm25 >= 1 && s.data.pm10 >= 1)
+    .sort((a, b) => a.data.pm25 - b.data.pm25 || a.data.pm10 - b.data.pm10);
+  const cleanest = ranked.slice(0, RANKING_SIZE);
+  const dirtiest = ranked.slice(-RANKING_SIZE).reverse();
+
+  const renderRanking = (title, list, id) => (
+    <section className={styles.rankingColumn} aria-labelledby={id}>
+      <h3 id={id}>{title}</h3>
+      <ol className={styles.rankingList}>
+        {list.map(s => (
+          <li key={s.id} className={styles.rankingItem}>
+            <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
+            <span className={styles.rankingName}>
+              <strong>{s.name}</strong>
+              {s.city && <span className={styles.rankingCity}>{s.city}</span>}
+            </span>
+            <span className={styles.rankingValues}>
+              <span>PM2.5: <strong>{s.data.pm25}</strong></span>
+              <span>PM10: <strong>{s.data.pm10}</strong></span>
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 
   return (
     <>
@@ -169,6 +202,20 @@ export default function StatsPage() {
               </div>
             </div>
           </div>
+
+          {ranked.length > 0 && (
+            <div className={styles.rankingSection}>
+              <h2>Ranking punktów pomiarowych</h2>
+              <p className={styles.rankingNote}>
+                Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5. Pomijamy odczyty poniżej 1 µg/m³.
+                {updatedAt && ` Pomiar z ${updatedAt.slice(0, 16)}.`}
+              </p>
+              <div className={styles.rankingGrid}>
+                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best')}
+                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst')}
+              </div>
+            </div>
+          )}
 
           <div className={styles.aqiLevelsSection}>
             <h2>Normy PM2.5 (µg/m³)</h2>

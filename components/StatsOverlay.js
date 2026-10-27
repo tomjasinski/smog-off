@@ -1,3 +1,4 @@
+import { getReadableTextColor } from '../lib/aqiLevels';
 import { AQI_LEVELS } from '../lib/aqiLevels';
 import styles from '../styles/StatsOverlay.module.css';
 
@@ -37,7 +38,9 @@ export default function StatsOverlay({ stats, visible, onClose }) {
               className={styles.aqiSegment} 
               style={{ 
                 width: `${(stats.good / stats.total * 100)}%`, 
-                backgroundColor: '#4ade80' 
+                backgroundColor: '#4ade80',
+
+                color: getReadableTextColor('#4ade80')
               }}
               title={`Dobra: ${stats.good}`}
             >
@@ -47,7 +50,9 @@ export default function StatsOverlay({ stats, visible, onClose }) {
               className={styles.aqiSegment} 
               style={{ 
                 width: `${(stats.moderate / stats.total * 100)}%`, 
-                backgroundColor: '#fbbf24' 
+                backgroundColor: '#fbbf24',
+
+                color: getReadableTextColor('#fbbf24')
               }}
               title={`Średnia: ${stats.moderate}`}
             >
@@ -57,7 +62,9 @@ export default function StatsOverlay({ stats, visible, onClose }) {
               className={styles.aqiSegment} 
               style={{ 
                 width: `${(stats.unhealthy / stats.total * 100)}%`, 
-                backgroundColor: '#fb923c' 
+                backgroundColor: '#fb923c',
+
+                color: getReadableTextColor('#fb923c')
               }}
               title={`Niezdrowa: ${stats.unhealthy}`}
             >
@@ -67,7 +74,9 @@ export default function StatsOverlay({ stats, visible, onClose }) {
               className={styles.aqiSegment} 
               style={{ 
                 width: `${((stats.veryUnhealthy || 0) / stats.total * 100)}%`, 
-                backgroundColor: '#ef4444' 
+                backgroundColor: '#ef4444',
+
+                color: getReadableTextColor('#ef4444')
               }}
               title={`Bardzo zła: ${stats.veryUnhealthy || 0}`}
             >
@@ -77,7 +86,9 @@ export default function StatsOverlay({ stats, visible, onClose }) {
               className={styles.aqiSegment} 
               style={{ 
                 width: `${((stats.hazardous || 0) / stats.total * 100)}%`, 
-                backgroundColor: '#a855f7' 
+                backgroundColor: '#a855f7',
+
+                color: getReadableTextColor('#a855f7')
               }}
               title={`Niebezpieczna: ${stats.hazardous || 0}`}
             >

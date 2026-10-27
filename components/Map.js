@@ -6,9 +6,8 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Delaunay } from 'd3-delaunay';
 import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
-import { getPMColor } from '../lib/aqiLevels';
+import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
-import Loading from '../components/Loading';
 
 function MapInstructions() {
   const [showTip, setShowTip] = useState(true);
@@ -77,8 +76,9 @@ function LocationButton() {
       onClick={locateUser}
       disabled={locating}
       title="Znajdź moją lokalizację"
+      aria-label="Znajdź moją lokalizację"
     >
-      {locating ? '🔄' : locationFound ? '📍' : '🎯'}
+      <span aria-hidden="true">{locating ? '🔄' : locationFound ? '📍' : '🎯'}</span>
     </button>
   );
 }
@@ -129,7 +129,7 @@ function BlogFloatingCards({ posts }) {
   );
 }
 
-function VisibleMarkersTracker({ stations, onVisibleCountChange }) {
+function VisibleMarkersTracker({ stations, onVisibleChange }) {
   const map = useMap();
 
   useMapEvents({
@@ -137,13 +137,21 @@ function VisibleMarkersTracker({ stations, onVisibleCountChange }) {
     zoomend: () => updateVisibleMarkers()
   });
 
+  // Rysujemy tylko stacje w widoku (z zapasem 50%), a nie wszystkie ~1600
   const updateVisibleMarkers = () => {
     const bounds = map.getBounds();
-    const visibleStations = stations.filter(station => 
-      bounds.contains([station.latitude, station.longitude])
-    );
-    
-    onVisibleCountChange(visibleStations.length);
+    const padded = bounds.pad(0.5);
+    const inView = [];
+    let visibleCount = 0;
+
+    for (const station of stations) {
+      const point = [station.latitude, station.longitude];
+      if (!padded.contains(point)) continue;
+      inView.push(station);
+      if (bounds.contains(point)) visibleCount++;
+    }
+
+    onVisibleChange(inView, visibleCount);
   };
 
   useEffect(() => {
@@ -366,25 +374,58 @@ export default function Map({ posts }) {
   const [visibleCount, setVisibleCount] = useState(0);
   const [showStatsPanel, setShowStatsPanel] = useState(false);
   const [userLocation, setUserLocation] = useState([52.4064, 16.9252]);
+  const [mapReady, setMapReady] = useState(false);
+  const [viewStations, setViewStations] = useState([]);
+
+  useEffect(() => {
+    if (!selectedStation) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedStation(null);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [selectedStation]);
+
+  const handleVisibleChange = (inView, count) => {
+    setViewStations(inView);
+    setVisibleCount(count);
+  };
 
   const showStatsButton = visibleCount > 20;
 
   useEffect(() => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.log('Geolokalizacja niedostępna:', error.message);
-        }
-      );
+    // Lokalizacja tylko, gdy zgoda została już wcześniej udzielona (bez pytania przy starcie).
+    // W pozostałych przypadkach użytkownik używa przycisku lokalizacji.
+    if ('geolocation' in navigator && navigator.permissions?.query) {
+      navigator.permissions
+        .query({ name: 'geolocation' })
+        .then((status) => {
+          if (status.state !== 'granted') return;
+          navigator.geolocation.getCurrentPosition(
+            (position) => {
+              setUserLocation([position.coords.latitude, position.coords.longitude]);
+            },
+            (error) => {
+              console.log('Geolokalizacja niedostępna:', error.message);
+            }
+          );
+        })
+        .catch(() => {});
     }
 
+    // Zapas: jeśli kafelki się nie załadują, i tak pobierz dane po 4 s
+    const fallback = setTimeout(() => setMapReady(true), 4000);
+    return () => clearTimeout(fallback);
+  }, []);
+
+  // Dane (ok. 600 KB) pobieramy dopiero po wyrenderowaniu kafelków mapy,
+  // żeby nie blokować pierwszego malowania mapy
+  useEffect(() => {
+    if (!mapReady) return;
     fetchAirQuality();
     const interval = setInterval(fetchAirQuality, 300000);
     return () => clearInterval(interval);
-  }, []);
+  }, [mapReady]);
 
   async function fetchAirQuality() {
     try {
@@ -403,10 +444,6 @@ export default function Map({ posts }) {
     }
   }
 
-  if (loading) {
-    return <Loading />;
-  }
-
   const showVoronoi = visibleCount >= 2 && visibleCount <= 25;
   const showClusters = !showVoronoi;
 
@@ -418,38 +455,40 @@ export default function Map({ posts }) {
         className={styles.map}
         zoomControl={true}
         scrollWheelZoom={true}
+        preferCanvas={true}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           maxZoom={19}
+          eventHandlers={{ load: () => setMapReady(true) }}
         />
 
-        <MapInstructions />
+        {!loading && <MapInstructions />}
         <LocationButton />
         
         {/* Przycisk statystyk WEWNĄTRZ MapContainer */}
         {showStatsButton && (
           <div className={styles.statsButtonWrapper}>
-            <Link href="/stats">
-              <button 
-                className={styles.statsButton}
-                title="Pokaż statystyki"
-              >
-                📊
-              </button>
+            <Link
+              href="/stats"
+              className={styles.statsButton}
+              title="Pokaż statystyki"
+              aria-label="Pokaż statystyki"
+            >
+              <span aria-hidden="true">📊</span>
             </Link>
           </div>
         )}
         
-        <VisibleMarkersTracker 
-          stations={airData} 
-          onVisibleCountChange={setVisibleCount}
+        <VisibleMarkersTracker
+          stations={airData}
+          onVisibleChange={handleVisibleChange}
         />
 
         {showVoronoi && (
-          <VoronoiLayer 
-            stations={airData} 
+          <VoronoiLayer
+            stations={viewStations}
             onStationClick={setSelectedStation}
             enabled={true}
           />
@@ -471,7 +510,7 @@ export default function Map({ posts }) {
               });
             }}
           >
-            {airData.map((station) => (
+            {viewStations.map((station) => (
               <CircleMarker
                 key={`marker-${station.id}`}
                 center={[station.latitude, station.longitude]}
@@ -489,7 +528,7 @@ export default function Map({ posts }) {
                 <Popup>
                   <div className={styles.popup}>
                     <h3>{station.name}</h3>
-                    <div className={styles.badge} style={{ backgroundColor: station.aqi.color }}>
+                    <div className={styles.badge} style={{ backgroundColor: station.aqi.color, color: getReadableTextColor(station.aqi.color) }}>
                       {station.aqi.label}
                     </div>
                   </div>
@@ -498,7 +537,7 @@ export default function Map({ posts }) {
             ))}
           </MarkerClusterGroup>
         ) : (
-          airData.map((station) => (
+          viewStations.map((station) => (
             <CircleMarker
               key={`marker-${station.id}`}
               center={[station.latitude, station.longitude]}
@@ -516,7 +555,7 @@ export default function Map({ posts }) {
               <Popup>
                 <div className={styles.popup}>
                   <h3>{station.name}</h3>
-                  <div className={styles.badge} style={{ backgroundColor: station.aqi.color }}>
+                  <div className={styles.badge} style={{ backgroundColor: station.aqi.color, color: getReadableTextColor(station.aqi.color) }}>
                     {station.aqi.label}
                   </div>
                 </div>
@@ -526,23 +565,37 @@ export default function Map({ posts }) {
         )}
       </MapContainer>
 
+      {loading && (
+        <div className={styles.dataLoading} role="status">
+          Ładowanie danych o jakości powietrza…
+        </div>
+      )}
+
       <BlogFloatingCards posts={posts} />
 
       {selectedStation && (
         <div className={styles.detailOverlay} onClick={() => setSelectedStation(null)}>
-          <div className={styles.detailContent} onClick={(e) => e.stopPropagation()}>
-            <button 
+          <div
+            className={styles.detailContent}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="station-dialog-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
               className={styles.closeBtn}
               onClick={() => setSelectedStation(null)}
+              aria-label="Zamknij szczegóły stacji"
+              autoFocus
             >
-              ×
+              <span aria-hidden="true">×</span>
             </button>
-            
-            <h2>{selectedStation.name}</h2>
+
+            <h2 id="station-dialog-title">{selectedStation.name}</h2>
             
             <div 
               className={styles.statusBadge} 
-              style={{ backgroundColor: selectedStation.aqi.color }}
+              style={{ backgroundColor: selectedStation.aqi.color, color: getReadableTextColor(selectedStation.aqi.color) }}
             >
               {selectedStation.aqi.label}
             </div>

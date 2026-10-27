@@ -25,19 +25,15 @@ CAMS opisał kilka etapów:
 
 ## Czy to wpłynęło na jakość powietrza przy ziemi?
 
-To pytanie jest kluczowe, bo mapa SmogOFF pokazuje stężenia pyłu tuż przy ziemi, a nie to, co widać na niebie.
+To najważniejsze pytanie, bo dla zdrowia liczy się powietrze, którym oddychamy przy ziemi, a nie to, co widać na niebie.
 
 - W komunikacie z czerwca CAMS stwierdził, że dym **„nie powinien mieć znaczącego wpływu na jakość powietrza przy ziemi w Europie”**. Była to jednak prognoza z danego momentu, a nie podsumowanie całego sezonu. [3]
 - Inaczej było w Ameryce Północnej: analizy CAMS pokazały, że dym z pożarów w Quebecu **znacząco wpłynął na jakość powietrza przy powierzchni ziemi w Nowym Jorku i Filadelfii** około 8 czerwca. [2]
 
-Nie znaleźliśmy w tych źródłach danych o stężeniach PM2.5 w Polsce z tego okresu, więc nie twierdzimy, że dym wpłynął na polskie powietrze.
+## Dwa wnioski
 
-## Dlaczego to ma znaczenie dla czytelnika mapy?
-
-Wnioski z tych dokumentów są dość proste:
-
-1. **Zanieczyszczenie nie zna granic.** Dym może pokonać Atlantyk i pojawić się nad Europą. [2]
-2. **Zamglone niebo nie musi oznaczać zanieczyszczonego powietrza przy ziemi.** CAMS prognozował ograniczony wpływ dymu na powietrze przy powierzchni w Europie. [3] Dlatego warto sprawdzać pomiary stacji, a nie oceniać jakości powietrza po wyglądzie nieba.
+1. **Zanieczyszczenie nie zna granic.** Dym z pożarów może pokonać Atlantyk i pojawić się nad Europą. [2]
+2. **Zamglone niebo nie musi oznaczać zanieczyszczonego powietrza przy ziemi.** CAMS prognozował ograniczony wpływ dymu na powietrze przy powierzchni w Europie. [3] Dlatego jakość powietrza najlepiej oceniać po pomiarach ze stacji, a nie po wyglądzie nieba.
 
 ## Źródła
 

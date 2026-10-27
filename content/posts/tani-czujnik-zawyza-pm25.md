@@ -19,15 +19,9 @@ Zespół badaczy związany z amerykańską Agencją Ochrony Środowiska (EPA) po
 - Ostateczne równanie z artykułu to: **PM2.5 = 0,524 × odczyt czujnika − 0,0862 × RH + 5,75**, gdzie RH podaje się w procentach. [1]
 - Po zastosowaniu korekty średni błąd (RMSE) spadł **z 8 do 3 µg/m³**. [1]
 
-Dla porównania: wedle skali używanej w SmogOFF granica „dobrej” jakości dla PM2.5 to 12 µg/m³ (zob. tabelę w repozytorium aplikacji), więc błąd rzędu 8 µg/m³ potrafi przesunąć punkt o całą kategorię kolorów. Ten wniosek to nasza interpretacja liczb z badania, a nie wynik z artykułu.
+## Wniosek
 
-## Dlaczego to ważne?
-
-Równanie powstało dla konkretnego typu czujnika i konkretnych warunków w USA, więc nie wolno go mechanicznie stosować do każdej sieci pomiarowej. Z badania wynika jednak ogólna lekcja: **tani czujnik nie jest mierzącym „na oko” urządzeniem, tylko wymaga kalibracji względem stacji referencyjnych, a wilgotność powietrza ma znaczenie dla odczytu**. [1]
-
-## A SmogOFF?
-
-SmogOFF pokazuje dane pobierane z publicznego API ESA i nie stosuje własnej korekty. Nie sprawdzaliśmy, jakiego typu czujniki tworzą tę sieć ani czy dostawca danych przeprowadza kalibrację, więc traktuj kolory na mapie jako orientacyjne – szczególnie przy wartościach bliskich progom między kategoriami.
+Badanie pokazuje, że niedrogie czujniki są bardzo użyteczne, gdy porównamy je ze stacjami referencyjnymi i uwzględnimy wilgotność powietrza. Dzięki takiej kalibracji ich odczyty zbliżają się do pomiarów urzędowych, a błąd spada z 8 do 3 µg/m³. [1] To jeden z powodów, dla których gęste sieci czujników mogą skutecznie uzupełniać sieć stacji referencyjnych i pokazywać zanieczyszczenie tam, gdzie wcześniej nie było go widać.
 
 ## Źródła
 

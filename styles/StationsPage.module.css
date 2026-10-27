@@ -1,0 +1,167 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  background: #fafbfc;
+}
+
+.backLink {
+  display: inline-block;
+  margin-bottom: 2rem;
+  color: #3f51b5;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.backLink:hover {
+  color: #764ba2;
+}
+
+.article {
+  background: white;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.article h1 {
+  margin: 0 0 0.5rem;
+  color: #1f2937;
+  font-size: 2rem;
+}
+
+.intro {
+  margin: 0 0 1.5rem;
+  color: #4b5563;
+}
+
+.controls {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.field input,
+.field select {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  border: 1.5px solid #6b7280;
+  border-radius: 8px;
+  background: #fff;
+  color: #111827;
+}
+
+.count {
+  margin: 0 0 0.75rem;
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  padding: 0.6rem 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+  vertical-align: top;
+  color: #1f2937;
+}
+
+.table thead th {
+  position: sticky;
+  top: 0;
+  background: #f3f4f6;
+  font-weight: 700;
+}
+
+.table tbody th {
+  font-weight: 600;
+}
+
+.stationName {
+  min-width: 14rem;
+  overflow-wrap: anywhere;
+}
+
+.street {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: #4b5563;
+}
+
+.num {
+  text-align: right !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.moreButton {
+  display: block;
+  margin: 1.25rem auto 0;
+  padding: 0.7rem 1.5rem;
+  border: 2px solid #3f51b5;
+  border-radius: 999px;
+  background: #fff;
+  color: #3f51b5;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.moreButton:hover {
+  background: #3f51b5;
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .article {
+    padding: 1.25rem;
+  }
+
+  .article h1 {
+    font-size: 1.5rem;
+  }
+
+  .controls {
+    grid-template-columns: 1fr;
+  }
+
+  .stationName {
+    min-width: 11rem;
+  }
+}

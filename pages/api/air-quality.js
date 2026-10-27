@@ -1,6 +1,6 @@
 import NodeCache from 'node-cache';
 import axios from 'axios';
-import { calculateAQI } from '../../lib/aqiLevels';
+import { mapStation, summarizeStations } from '../../lib/airQuality';
 
 const cache = new NodeCache({ stdTTL: 3600 });
 const API_URL = 'https://public-esa.ose.gov.pl/api/v1/smog';
@@ -20,100 +20,50 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 export default async function handler(req, res) {
   try {
-    const cachedData = cache.get('airQualityData');
-    
-    if (cachedData) {
-      console.log('Zwracam dane z cache');
-      return res.status(200).json({
-        data: cachedData.data,
-        stats: cachedData.stats,
-        cached: true,
-        timestamp: new Date().toISOString()
-      });
+    let allStations = cache.get('airQualityStations');
+    const cached = Boolean(allStations);
+
+    if (!allStations) {
+      console.log('Pobieram świeże dane z API...');
+      const response = await axios.get(API_URL);
+
+      if (!response.data || !response.data.smog_data) {
+        throw new Error('Nieprawidłowa struktura danych API');
+      }
+
+      allStations = response.data.smog_data
+        .filter(item => {
+          if (!item.school?.latitude || !item.school?.longitude) return false;
+
+          const distance = calculateDistance(
+            POZNAN_COORDS.lat,
+            POZNAN_COORDS.lng,
+            parseFloat(item.school.latitude),
+            parseFloat(item.school.longitude)
+          );
+
+          return distance < POZNAN_COORDS.radius;
+        })
+        .map(mapStation);
+
+      cache.set('airQualityStations', allStations);
+      console.log(`Znaleziono ${allStations.length} stacji w Polsce`);
     }
 
-    console.log('Pobieram świeże dane z API...');
-    const response = await axios.get(API_URL);
-    
-    if (!response.data || !response.data.smog_data) {
-      throw new Error('Nieprawidłowa struktura danych API');
-    }
+    // Świeżość liczymy przy każdym żądaniu, więc dane z cache też się "starzeją"
+    const { stations, stats } = summarizeStations(allStations);
 
-    const allData = response.data.smog_data
-      .filter(item => {
-        if (!item.school?.latitude || !item.school?.longitude) return false;
-        
-        const distance = calculateDistance(
-          POZNAN_COORDS.lat,
-          POZNAN_COORDS.lng,
-          parseFloat(item.school.latitude),
-          parseFloat(item.school.longitude)
-        );
-        
-        return distance < POZNAN_COORDS.radius;
-      })
-      .map(item => {
-        const aqi = calculateAQI(
-          item.data?.pm25_avg,
-          item.data?.pm10_avg
-        );
-        
-        const round1 = (value) => Math.round((value || 0) * 10) / 10;
-
-        return {
-          // Stabilny identyfikator (wcześniej Math.random() zmieniał klucze Reacta)
-          id: item.school?.id || `${item.school?.latitude},${item.school?.longitude}`,
-          name: item.school?.name || 'Nieznana lokalizacja',
-          city: item.school?.city || '',
-          street: item.school?.street || '',
-          latitude: parseFloat(item.school?.latitude),
-          longitude: parseFloat(item.school?.longitude),
-          data: {
-            pm25: round1(item.data?.pm25_avg),
-            pm10: round1(item.data?.pm10_avg),
-            temperature: round1(item.data?.temperature_avg),
-            humidity: round1(item.data?.humidity_avg),
-            pressure: round1(item.data?.pressure_avg)
-          },
-          aqi: aqi,
-          timestamp: item.timestamp || new Date().toISOString()
-        };
-      });
-
-    const validData = allData.filter(d => d.data.pm25 > 0 && d.data.pm10 > 0);
-    const avgPM25 = validData.reduce((sum, d) => sum + d.data.pm25, 0) / validData.length;
-    const avgPM10 = validData.reduce((sum, d) => sum + d.data.pm10, 0) / validData.length;
-    const avgTemp = validData.reduce((sum, d) => sum + d.data.temperature, 0) / validData.length;
-    
-    const stats = {
-      total: allData.length,
-      avgPM25: avgPM25.toFixed(1),
-      avgPM10: avgPM10.toFixed(1),
-      avgTemperature: avgTemp.toFixed(1),
-      good: allData.filter(d => d.aqi.level === 'good').length,
-      moderate: allData.filter(d => d.aqi.level === 'moderate').length,
-      unhealthy: allData.filter(d => d.aqi.level === 'unhealthy').length,
-      veryUnhealthy: allData.filter(d => d.aqi.level === 'very-unhealthy').length,
-      hazardous: allData.filter(d => d.aqi.level === 'hazardous').length,
-      extreme: allData.filter(d => d.aqi.level === 'extreme').length
-    };
-
-    cache.set('airQualityData', { data: allData, stats });
-    
-    console.log(`Znaleziono ${allData.length} stacji w Polsce`);
-    
     res.status(200).json({
-      data: allData,
-      stats: stats,
-      cached: false,
+      data: stations,
+      stats,
+      cached,
       timestamp: new Date().toISOString()
     });
-
   } catch (error) {
     console.error('Błąd pobierania danych:', error.message);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Błąd pobierania danych',
-      message: error.message 
+      message: error.message
     });
   }
 }

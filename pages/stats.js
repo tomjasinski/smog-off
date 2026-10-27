@@ -1,3 +1,4 @@
+import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
@@ -50,6 +51,7 @@ export default function StatsPage() {
     <>
       <Head>
         <title>Statystyki jakości powietrza - SmogOFF</title>
+        <meta name="description" content="Zbiorcze statystyki jakości powietrza w Polsce: średnie stężenia PM2.5 i PM10 oraz liczba stacji w poszczególnych kategoriach." />
       </Head>
 
       <div className={styles.container}>
@@ -86,7 +88,9 @@ export default function StatsPage() {
                 className={styles.aqiSegment} 
                 style={{ 
                   width: `${(stats.good / stats.total * 100)}%`, 
-                  backgroundColor: '#4ade80' 
+                  backgroundColor: '#4ade80',
+
+                  color: getReadableTextColor('#4ade80')
                 }}
                 title={`Dobra: ${stats.good}`}
               >
@@ -96,7 +100,9 @@ export default function StatsPage() {
                 className={styles.aqiSegment} 
                 style={{ 
                   width: `${(stats.moderate / stats.total * 100)}%`, 
-                  backgroundColor: '#fbbf24' 
+                  backgroundColor: '#fbbf24',
+
+                  color: getReadableTextColor('#fbbf24')
                 }}
                 title={`Średnia: ${stats.moderate}`}
               >
@@ -106,7 +112,9 @@ export default function StatsPage() {
                 className={styles.aqiSegment} 
                 style={{ 
                   width: `${(stats.unhealthy / stats.total * 100)}%`, 
-                  backgroundColor: '#fb923c' 
+                  backgroundColor: '#fb923c',
+
+                  color: getReadableTextColor('#fb923c')
                 }}
                 title={`Niezdrowa: ${stats.unhealthy}`}
               >
@@ -116,7 +124,9 @@ export default function StatsPage() {
                 className={styles.aqiSegment} 
                 style={{ 
                   width: `${((stats.veryUnhealthy || 0) / stats.total * 100)}%`, 
-                  backgroundColor: '#ef4444' 
+                  backgroundColor: '#ef4444',
+
+                  color: getReadableTextColor('#ef4444')
                 }}
                 title={`Bardzo zła: ${stats.veryUnhealthy || 0}`}
               >
@@ -126,7 +136,9 @@ export default function StatsPage() {
                 className={styles.aqiSegment} 
                 style={{ 
                   width: `${((stats.hazardous || 0) / stats.total * 100)}%`, 
-                  backgroundColor: '#a855f7' 
+                  backgroundColor: '#a855f7',
+
+                  color: getReadableTextColor('#a855f7')
                 }}
                 title={`Niebezpieczna: ${stats.hazardous || 0}`}
               >

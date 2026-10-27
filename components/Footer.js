@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className={styles.footer}>
       <p>© 2025 Tomasz Jasiński</p>
       <p className={styles.subtext}>
-        Dane z <a href="https://ose.gov.pl" target="_blank" rel="noopener noreferrer">ESA Poland</a>
+        Dane z <a href="https://ose.gov.pl" target="_blank" rel="noopener noreferrer">ESA Poland<span className="sr-only"> (otwiera się w nowej karcie)</span></a>
       </p>
     </footer>
   );

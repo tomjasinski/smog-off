@@ -6,7 +6,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Delaunay } from 'd3-delaunay';
 import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
-import { getPMColor } from '../lib/aqiLevels';
+import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
 function MapInstructions() {
@@ -76,8 +76,9 @@ function LocationButton() {
       onClick={locateUser}
       disabled={locating}
       title="Znajdź moją lokalizację"
+      aria-label="Znajdź moją lokalizację"
     >
-      {locating ? '🔄' : locationFound ? '📍' : '🎯'}
+      <span aria-hidden="true">{locating ? '🔄' : locationFound ? '📍' : '🎯'}</span>
     </button>
   );
 }
@@ -376,6 +377,15 @@ export default function Map({ posts }) {
   const [mapReady, setMapReady] = useState(false);
   const [viewStations, setViewStations] = useState([]);
 
+  useEffect(() => {
+    if (!selectedStation) return;
+    const onKeyDown = (e) => {
+      if (e.key === 'Escape') setSelectedStation(null);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [selectedStation]);
+
   const handleVisibleChange = (inView, count) => {
     setViewStations(inView);
     setVisibleCount(count);
@@ -460,13 +470,13 @@ export default function Map({ posts }) {
         {/* Przycisk statystyk WEWNĄTRZ MapContainer */}
         {showStatsButton && (
           <div className={styles.statsButtonWrapper}>
-            <Link href="/stats">
-              <button 
-                className={styles.statsButton}
-                title="Pokaż statystyki"
-              >
-                📊
-              </button>
+            <Link
+              href="/stats"
+              className={styles.statsButton}
+              title="Pokaż statystyki"
+              aria-label="Pokaż statystyki"
+            >
+              <span aria-hidden="true">📊</span>
             </Link>
           </div>
         )}
@@ -518,7 +528,7 @@ export default function Map({ posts }) {
                 <Popup>
                   <div className={styles.popup}>
                     <h3>{station.name}</h3>
-                    <div className={styles.badge} style={{ backgroundColor: station.aqi.color }}>
+                    <div className={styles.badge} style={{ backgroundColor: station.aqi.color, color: getReadableTextColor(station.aqi.color) }}>
                       {station.aqi.label}
                     </div>
                   </div>
@@ -545,7 +555,7 @@ export default function Map({ posts }) {
               <Popup>
                 <div className={styles.popup}>
                   <h3>{station.name}</h3>
-                  <div className={styles.badge} style={{ backgroundColor: station.aqi.color }}>
+                  <div className={styles.badge} style={{ backgroundColor: station.aqi.color, color: getReadableTextColor(station.aqi.color) }}>
                     {station.aqi.label}
                   </div>
                 </div>
@@ -565,19 +575,27 @@ export default function Map({ posts }) {
 
       {selectedStation && (
         <div className={styles.detailOverlay} onClick={() => setSelectedStation(null)}>
-          <div className={styles.detailContent} onClick={(e) => e.stopPropagation()}>
-            <button 
+          <div
+            className={styles.detailContent}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="station-dialog-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
               className={styles.closeBtn}
               onClick={() => setSelectedStation(null)}
+              aria-label="Zamknij szczegóły stacji"
+              autoFocus
             >
-              ×
+              <span aria-hidden="true">×</span>
             </button>
-            
-            <h2>{selectedStation.name}</h2>
+
+            <h2 id="station-dialog-title">{selectedStation.name}</h2>
             
             <div 
               className={styles.statusBadge} 
-              style={{ backgroundColor: selectedStation.aqi.color }}
+              style={{ backgroundColor: selectedStation.aqi.color, color: getReadableTextColor(selectedStation.aqi.color) }}
             >
               {selectedStation.aqi.label}
             </div>

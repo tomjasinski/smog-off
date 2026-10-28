@@ -105,9 +105,27 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.75rem;
+  padding: 0.85rem 1rem;
   background: #f9fafb;
   border-radius: 8px;
+}
+
+.legendLabel {
+  flex: 1;
+  color: #374151;
+  font-weight: 600;
+}
+
+.legendValue {
+  color: #374151;
+  font-weight: 700;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.legendShare {
+  color: #6b7280;
+  font-weight: 400;
 }
 
 .legendDot {

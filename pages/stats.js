@@ -90,7 +90,7 @@ export default function StatsPage() {
   const cleanestCities = cities.slice(0, RANKING_SIZE);
   const dirtiestCities = cities.slice(-RANKING_SIZE).reverse();
 
-  const renderCityRanking = (title, list, id) => (
+  const renderCityRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
@@ -108,10 +108,11 @@ export default function StatsPage() {
           </li>
         ))}
       </ol>
+      {share && <ShareImageButton title={share.title} text={share.text} render={share.render} />}
     </section>
   );
 
-  const renderRanking = (title, list, id) => (
+  const renderRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
@@ -129,6 +130,7 @@ export default function StatsPage() {
           </li>
         ))}
       </ol>
+      {share && <ShareImageButton title={share.title} text={share.text} render={share.render} />}
     </section>
   );
 
@@ -136,8 +138,7 @@ export default function StatsPage() {
     [
       'Dane: ESA Poland',
       'progi EAQI (EEA, WHO 2021)',
-      updatedAt ? `pomiar z ${updatedAt.slice(0, 16).replace('T', ' ')}` : null,
-      window.location.host
+      updatedAt ? `pomiar z ${updatedAt.slice(0, 16).replace('T', ' ')}` : null
     ].filter(Boolean).join(' · ');
 
   const stationRows = (list) =>
@@ -145,27 +146,22 @@ export default function StatsPage() {
   const cityRows = (list) =>
     list.map((c, i) => ({ rank: i + 1, name: c.city, sub: `stacji: ${c.count}`, color: c.aqi.color, pm25: c.pm25, pm10: c.pm10 }));
 
-  const renderStationsImage = () =>
-    renderRankingImage({
-      title: 'Ranking punktów pomiarowych',
-      subtitle: 'Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5.',
-      sections: [
-        { title: `Top ${cleanest.length} najczystsze`, accent: '#4ade80', rows: stationRows(cleanest) },
-        { title: `Top ${dirtiest.length} najbardziej zanieczyszczone`, accent: '#ef4444', rows: stationRows(dirtiest) }
-      ],
-      footer: imageFooter()
-    });
-
-  const renderCitiesImage = () =>
-    renderRankingImage({
-      title: 'Ranking miast',
-      subtitle: `Mediana odczytów ze wszystkich stacji w mieście (µg/m³), miasta z co najmniej ${MIN_STATIONS_PER_CITY} stacjami.`,
-      sections: [
-        { title: `Top ${cleanestCities.length} najczystsze miasta`, accent: '#4ade80', rows: cityRows(cleanestCities) },
-        { title: `Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, accent: '#ef4444', rows: cityRows(dirtiestCities) }
-      ],
-      footer: imageFooter()
-    });
+  // Każdy ranking (najczystsze / najbardziej zanieczyszczone) ma własną grafikę
+  const rankingShare = ({ title, subtitle, kind, accent, rows }) => ({
+    title,
+    text: `${title} w Polsce (SmogOFF)`,
+    render: () =>
+      renderRankingImage({
+        title,
+        subtitle,
+        sections: [{ title: `Top ${rows.length} ${kind}`, accent, rows }],
+        footer: imageFooter()
+      })
+  });
+  const STATIONS_SUBTITLE = 'Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5.';
+  const CITIES_SUBTITLE = `Mediana odczytów ze wszystkich stacji w mieście (µg/m³), miasta z co najmniej ${MIN_STATIONS_PER_CITY} stacjami.`;
+  const BEST = '#4ade80';
+  const WORST = '#ef4444';
 
   const renderDistribution = () =>
     renderDistributionImage({
@@ -241,7 +237,8 @@ export default function StatsPage() {
                 return (
                   <div key={level} className={styles.legendRow}>
                     <span className={styles.legendDot} style={{backgroundColor: color}}></span>
-                    <span>{label}: {count} ({((count / stats.total) * 100).toFixed(1)}%)</span>
+                    <span className={styles.legendLabel}>{label}</span>
+                    <span className={styles.legendValue}>{count} <span className={styles.legendShare}>({((count / stats.total) * 100).toFixed(1)}%)</span></span>
                   </div>
                 );
               })}
@@ -262,14 +259,9 @@ export default function StatsPage() {
                 {updatedAt && ` Pomiar z ${updatedAt.slice(0, 16)}.`}
               </p>
               <div className={styles.rankingGrid}>
-                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best')}
-                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst')}
+                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best', rankingShare({ title: 'Najczystsze punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: stationRows(cleanest) }))}
+                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst', rankingShare({ title: 'Najbardziej zanieczyszczone punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: stationRows(dirtiest) }))}
               </div>
-              <ShareImageButton
-                title="Ranking punktów pomiarowych"
-                text="Najczystsze i najbardziej zanieczyszczone punkty pomiarowe w Polsce (SmogOFF)"
-                render={renderStationsImage}
-              />
             </div>
           )}
 
@@ -282,14 +274,9 @@ export default function StatsPage() {
                 Mediana jest odporna na pojedyncze błędne czujniki.
               </p>
               <div className={styles.rankingGrid}>
-                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best')}
-                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst')}
+                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best', rankingShare({ title: 'Najczystsze miasta', subtitle: CITIES_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: cityRows(cleanestCities) }))}
+                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst', rankingShare({ title: 'Najbardziej zanieczyszczone miasta', subtitle: CITIES_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: cityRows(dirtiestCities) }))}
               </div>
-              <ShareImageButton
-                title="Ranking miast"
-                text="Najczystsze i najbardziej zanieczyszczone miasta w Polsce (SmogOFF)"
-                render={renderCitiesImage}
-              />
             </div>
           )}
 

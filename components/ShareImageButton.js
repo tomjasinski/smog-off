@@ -78,6 +78,11 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
             aria-labelledby="share-image-title"
             onClick={(e) => e.stopPropagation()}
           >
+            <button type="button" className={styles.closeButton} onClick={close} ref={closeRef} aria-label="Zamknij podgląd">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
             <h2 id="share-image-title">{title}</h2>
             <div className={styles.previewBox}>
               <img src={preview.url} alt={`Podgląd grafiki: ${title}`} className={styles.preview} />
@@ -87,7 +92,6 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
               {canShare && (
                 <button type="button" className={styles.secondary} onClick={share}>Udostępnij</button>
               )}
-              <button type="button" className={styles.secondary} onClick={close} ref={closeRef}>Zamknij</button>
             </div>
           </div>
         </div>

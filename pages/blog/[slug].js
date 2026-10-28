@@ -21,7 +21,7 @@ export default function BlogPost({ post, allPosts }) {
         <meta name="description" content={post.excerpt} />
       </Head>
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <Link href="/" className={styles.backLink}>
           ← Powrót do mapy
         </Link>
@@ -63,7 +63,7 @@ export default function BlogPost({ post, allPosts }) {
               </Link>
             ))}
         </aside>
-      </div>
+      </main>
     </>
   );
 }

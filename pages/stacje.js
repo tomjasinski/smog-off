@@ -2,6 +2,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { getReadableTextColor } from '../lib/aqiLevels';
+import { cityPageSlugs } from '../lib/cities';
+import CityLink from '../components/CityLink';
 import styles from '../styles/StationsPage.module.css';
 
 const PAGE_SIZE = 50;
@@ -50,6 +52,8 @@ export default function StationsPage() {
     setVisible(PAGE_SIZE);
   }, [query, sort]);
 
+  const citySlugs = useMemo(() => cityPageSlugs(stations), [stations]);
+
   const shown = filtered.slice(0, visible);
 
   return (
@@ -59,8 +63,10 @@ export default function StationsPage() {
         <meta name="description" content="Wszystkie stacje pomiarowe jakości powietrza w formie tabeli z wyszukiwaniem po miejscowości, nazwie lub ulicy." />
       </Head>
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <Link href="/" className={styles.backLink}>← Powrót do mapy</Link>
+        {' · '}
+        <Link href="/stats" className={styles.backLink}>Statystyki</Link>
 
         <article className={styles.article}>
           <h1>Lista stacji pomiarowych</h1>
@@ -123,7 +129,7 @@ export default function StationsPage() {
                             {s.name}
                             {s.street && <span className={styles.street}>{s.street}</span>}
                           </th>
-                          <td>{s.city}</td>
+                          <td><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></td>
                           <td className={styles.num}>{s.data.pm25}</td>
                           <td className={styles.num}>{s.data.pm10}</td>
                           <td>
@@ -149,7 +155,7 @@ export default function StationsPage() {
             </>
           )}
         </article>
-      </div>
+      </main>
     </>
   );
 }

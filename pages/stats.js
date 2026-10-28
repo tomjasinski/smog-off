@@ -2,9 +2,16 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVELS, AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { cityPageSlugs } from '../lib/cities';
+import CityLink from '../components/CityLink';
 import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
+import ShareImageButton from '../components/ShareImageButton';
+import { renderRankingImage, renderDistributionImage } from '../lib/shareImage';
 import styles from '../styles/StatsPage.module.css';
+
+// Liczby w segmentach paska pokazujemy tylko, gdy segment jest dość szeroki (wąskie by się nakładały)
+const MIN_SEGMENT_SHARE_FOR_LABEL = 0.06;
 
 export default function StatsPage() {
   const [stats, setStats] = useState(null);
@@ -85,7 +92,10 @@ export default function StatsPage() {
   const cleanestCities = cities.slice(0, RANKING_SIZE);
   const dirtiestCities = cities.slice(-RANKING_SIZE).reverse();
 
-  const renderCityRanking = (title, list, id) => (
+  // Miasta z własną podstroną (co najmniej MIN_STATIONS_FOR_CITY_PAGE stacji) są klikalne
+  const citySlugs = cityPageSlugs(stations);
+
+  const renderCityRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
@@ -93,7 +103,9 @@ export default function StatsPage() {
           <li key={c.city} className={styles.rankingItem}>
             <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
-              <strong>{c.city}</strong>
+              <strong>
+                <CityLink name={c.city} slugs={citySlugs} className={styles.rankingLink} />
+              </strong>
               <span className={styles.rankingCity}>stacji: {c.count}</span>
             </span>
             <span className={styles.rankingValues}>
@@ -103,10 +115,11 @@ export default function StatsPage() {
           </li>
         ))}
       </ol>
+      {share && <ShareImageButton title={share.title} text={share.text} render={share.render} />}
     </section>
   );
 
-  const renderRanking = (title, list, id) => (
+  const renderRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
@@ -115,7 +128,11 @@ export default function StatsPage() {
             <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>{s.name}</strong>
-              {s.city && <span className={styles.rankingCity}>{s.city}</span>}
+              {s.city && (
+                <span className={styles.rankingCity}>
+                  <CityLink name={s.city} slugs={citySlugs} className={styles.rankingLink} />
+                </span>
+              )}
             </span>
             <span className={styles.rankingValues}>
               <span>PM2.5: <strong>{s.data.pm25}</strong></span>
@@ -124,8 +141,46 @@ export default function StatsPage() {
           </li>
         ))}
       </ol>
+      {share && <ShareImageButton title={share.title} text={share.text} render={share.render} />}
     </section>
   );
+
+  const imageFooter = () =>
+    [
+      'Dane: ESA Poland',
+      'progi EAQI (EEA, WHO 2021)',
+      updatedAt ? `pomiar z ${updatedAt.slice(0, 16).replace('T', ' ')}` : null
+    ].filter(Boolean).join(' · ');
+
+  const stationRows = (list) =>
+    list.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.city, color: s.aqi.color, pm25: s.data.pm25, pm10: s.data.pm10 }));
+  const cityRows = (list) =>
+    list.map((c, i) => ({ rank: i + 1, name: c.city, sub: `stacji: ${c.count}`, color: c.aqi.color, pm25: c.pm25, pm10: c.pm10 }));
+
+  // Każdy ranking (najczystsze / najbardziej zanieczyszczone) ma własną grafikę
+  const rankingShare = ({ title, subtitle, kind, accent, rows }) => ({
+    title,
+    text: `${title} w Polsce (SmogOFF)`,
+    render: () =>
+      renderRankingImage({
+        title,
+        subtitle,
+        sections: [{ title: `Top ${rows.length} ${kind}`, accent, rows }],
+        footer: imageFooter()
+      })
+  });
+  const STATIONS_SUBTITLE = 'Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5.';
+  const CITIES_SUBTITLE = `Mediana odczytów ze wszystkich stacji w mieście (µg/m³), miasta z co najmniej ${MIN_STATIONS_PER_CITY} stacjami.`;
+  const BEST = '#4ade80';
+  const WORST = '#ef4444';
+
+  const renderDistribution = () =>
+    renderDistributionImage({
+      title: 'Jakość powietrza w Polsce',
+      subtitle: `Rozkład ${stats.total} stacji pomiarowych według poziomu jakości powietrza.`,
+      stats,
+      footer: imageFooter()
+    });
 
   return (
     <>
@@ -134,7 +189,7 @@ export default function StatsPage() {
         <meta name="description" content="Zbiorcze statystyki jakości powietrza w Polsce: średnie stężenia PM2.5 i PM10 oraz liczba stacji w poszczególnych kategoriach." />
       </Head>
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <Link href="/" className={styles.backLink}>
           ← Powrót do mapy
         </Link>
@@ -181,7 +236,7 @@ export default function StatsPage() {
                     }}
                     title={`${label}: ${count}`}
                   >
-                    {count > 0 && <span>{count}</span>}
+                    {count / stats.total >= MIN_SEGMENT_SHARE_FOR_LABEL && <span>{count}</span>}
                   </div>
                 );
               })}
@@ -193,11 +248,18 @@ export default function StatsPage() {
                 return (
                   <div key={level} className={styles.legendRow}>
                     <span className={styles.legendDot} style={{backgroundColor: color}}></span>
-                    <span>{label}: {count} ({((count / stats.total) * 100).toFixed(1)}%)</span>
+                    <span className={styles.legendLabel}>{label}</span>
+                    <span className={styles.legendValue}>{count} <span className={styles.legendShare}>({((count / stats.total) * 100).toFixed(1)}%)</span></span>
                   </div>
                 );
               })}
             </div>
+
+            <ShareImageButton
+              title="Jakość powietrza w Polsce"
+              text="Rozkład stacji pomiarowych według jakości powietrza (SmogOFF)"
+              render={renderDistribution}
+            />
           </div>
 
           {ranked.length > 0 && (
@@ -208,8 +270,8 @@ export default function StatsPage() {
                 {updatedAt && ` Pomiar z ${updatedAt.slice(0, 16)}.`}
               </p>
               <div className={styles.rankingGrid}>
-                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best')}
-                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst')}
+                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best', rankingShare({ title: 'Najczystsze punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: stationRows(cleanest) }))}
+                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst', rankingShare({ title: 'Najbardziej zanieczyszczone punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: stationRows(dirtiest) }))}
               </div>
             </div>
           )}
@@ -223,34 +285,35 @@ export default function StatsPage() {
                 Mediana jest odporna na pojedyncze błędne czujniki.
               </p>
               <div className={styles.rankingGrid}>
-                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best')}
-                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst')}
+                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best', rankingShare({ title: 'Najczystsze miasta', subtitle: CITIES_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: cityRows(cleanestCities) }))}
+                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst', rankingShare({ title: 'Najbardziej zanieczyszczone miasta', subtitle: CITIES_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: cityRows(dirtiestCities) }))}
               </div>
             </div>
           )}
 
           <div className={styles.aqiLevelsSection}>
-            <h2>Progi PM2.5 (µg/m³)</h2>
-            <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm25.map((level, idx) => (
-                <div key={level.level} className={styles.levelRow}>
-                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                  <span className={styles.levelLabel}>{level.label}</span>
-                  <span className={styles.levelRange}>{describeRange('pm25', idx)}</span>
-                </div>
-              ))}
-            </div>
-
-            <h2 style={{ marginTop: '2rem' }}>Progi PM10 (µg/m³)</h2>
-            <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm10.map((level, idx) => (
-                <div key={level.level} className={styles.levelRow}>
-                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                  <span className={styles.levelLabel}>{level.label}</span>
-                  <span className={styles.levelRange}>{describeRange('pm10', idx)}</span>
-                </div>
-              ))}
-            </div>
+            <h2>Progi jakości powietrza (µg/m³)</h2>
+            <table className={styles.levelsTable}>
+              <thead>
+                <tr>
+                  <th scope="col">Poziom</th>
+                  <th scope="col">PM2.5</th>
+                  <th scope="col">PM10</th>
+                </tr>
+              </thead>
+              <tbody>
+                {AQI_LEVEL_LIST.map(({ level, color, label }, idx) => (
+                  <tr key={level}>
+                    <th scope="row">
+                      <span className={styles.levelDot} style={{ backgroundColor: color }} aria-hidden="true"></span>
+                      {label}
+                    </th>
+                    <td>{describeRange('pm25', idx)}</td>
+                    <td>{describeRange('pm10', idx)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             <p className={styles.rankingNote} style={{ marginTop: '1rem' }}>
               Progi pochodzą z{' '}
@@ -262,7 +325,7 @@ export default function StatsPage() {
             </p>
           </div>
         </article>
-      </div>
+      </main>
     </>
   );
 }

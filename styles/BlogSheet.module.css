@@ -1,0 +1,151 @@
+/* Dolny arkusz z artykułami: zostawia miejsce po prawej na przycisk źródeł map (attribution) */
+.sheet {
+  position: absolute;
+  left: 8px;
+  right: 44px;
+  bottom: 8px;
+  z-index: 400;
+  max-width: 560px;
+  display: flex;
+  flex-direction: column;
+  max-height: min(60%, 420px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+  color: #f3f4f6;
+}
+
+.header {
+  display: block;
+  width: 100%;
+  padding: 0.25rem 0.7rem 0.45rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 12px;
+  touch-action: pan-x;
+}
+
+.header:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: -3px;
+}
+
+.handle {
+  display: block;
+  width: 27px;
+  height: 3px;
+  margin: 0.15rem auto 0.3rem;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.35);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.current {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 600;
+  animation: titleIn 0.4s ease-out;
+}
+
+@keyframes titleIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.count {
+  flex-shrink: 0;
+  min-width: 18px;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 18px;
+  text-align: center;
+}
+
+.chevron {
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.open .chevron {
+  transform: rotate(180deg);
+}
+
+.list {
+  margin: 0;
+  padding: 0 0.4rem 0.4rem;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.item {
+  display: block;
+  padding: 0.45rem 0.5rem;
+  border-radius: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.item:hover,
+.item:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.item:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: -3px;
+}
+
+.itemTitle {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #bfdbfe;
+}
+
+.itemExcerpt {
+  display: -webkit-box;
+  margin-top: 0.2rem;
+  overflow: hidden;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #d1d5db;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .current {
+    animation: none;
+  }
+
+  .chevron {
+    transition: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .sheet {
+    left: 16px;
+    bottom: 16px;
+  }
+}

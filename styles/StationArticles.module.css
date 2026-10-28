@@ -1,0 +1,38 @@
+.articles {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: #f3f4f6;
+}
+
+.articles h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.articles ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.articles li + li {
+  margin-top: 0.35rem;
+}
+
+.articles a {
+  color: #1d4ed8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.articles a:hover {
+  text-decoration: underline;
+}
+
+.articles a:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

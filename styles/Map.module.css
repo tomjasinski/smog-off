@@ -44,11 +44,11 @@
 }
 
 .tipContent {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1f2937;
   color: white;
   padding: 1rem 1.5rem;
   border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   font-size: 0.9rem;
   text-align: center;
   line-height: 1.6;
@@ -92,40 +92,22 @@
   cursor: not-allowed;
 }
 
-/* Wrapper dla przycisku statystyk - po prawej od lokalizacji */
-.statsButtonWrapper {
-  position: absolute;
-  top: 85px;
-  left: 60px;
-  z-index: 600;
-  pointer-events: none;
+.locationButton {
+  color: #1f2937;
 }
 
-/* Przycisk statystyk */
-.statsButton {
-  text-decoration: none;
-  background: white;
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  border-radius: 8px;
-  width: 40px;
-  height: 40px;
-  font-size: 1.3rem;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: auto;
+.locatingIcon {
+  animation: locating-pulse 1s ease-in-out infinite;
 }
 
-.statsButton:hover {
-  background: #f3f4f6;
-  transform: scale(1.1);
+@keyframes locating-pulse {
+  50% { opacity: 0.35; }
 }
 
-.statsButton:active {
-  transform: scale(0.95);
+@media (prefers-reduced-motion: reduce) {
+  .locatingIcon {
+    animation: none;
+  }
 }
 
 /* === PŁYWAJĄCE MYDEŁKA BLOGOWE === */
@@ -576,11 +558,6 @@
   .locationButton {
     top: 75px;
     left: 10px;
-  }
-  
-  .statsButtonWrapper {
-    top: 75px;
-    left: 60px;
   }
 }
 

@@ -5,7 +5,7 @@
 }
 
 .header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #1f2937;
   color: white;
   padding: 0.75rem 1rem;
   box-shadow: 0 2px 10px rgba(0,0,0,0.1);
@@ -16,35 +16,47 @@
 
 .headerContent {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.navLink {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.navLink:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 1px;
+}
+
+@media (max-width: 380px) {
+  .navLink {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+  }
 }
 
 .headerContent h1 {
   font-size: 1.1rem;
   margin: 0;
   font-weight: 700;
-}
-
-.legend {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  font-size: 0.75rem;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 2px solid white;
-  flex-shrink: 0;
 }
 
 .main {
@@ -54,7 +66,7 @@
 }
 
 .mapContainer {
-  height: calc(100vh - 140px); /* Zwiększony margines na mobile dla mydełek */
+  height: calc(100vh - 85px); /* Zostawia pasek nagłówka i skrawek artykułów poniżej mapy */
   min-height: 400px;
   width: 100%;
   position: relative;
@@ -88,21 +100,12 @@
     font-size: 1.3rem;
   }
   
-  .legend {
-    font-size: 0.85rem;
-  }
-  
-  .dot {
-    width: 14px;
-    height: 14px;
-  }
-  
   .blogGrid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .mapContainer {
-    height: calc(100vh - 80px);
+    height: calc(100vh - 65px);
   }
 }
 
@@ -111,29 +114,11 @@
     padding: 0.65rem 2rem;
   }
   
-  .headerContent {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
-  }
-  
   .headerContent h1 {
     font-size: 1.5rem;
     margin: 0;
   }
-  
-  .legend {
-    font-size: 0.85rem;
-    gap: 1.5rem;
-    flex-wrap: nowrap;
-  }
-  
-  .dot {
-    width: 14px;
-    height: 14px;
-  }
-  
+
   .mapContainer {
     height: calc(100vh - 65px);
   }

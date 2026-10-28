@@ -7,6 +7,7 @@ import { Delaunay } from 'd3-delaunay';
 import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
 import MapLegend from './MapLegend';
+import ShareStationButton from './ShareStationButton';
 import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
@@ -700,6 +701,8 @@ export default function Map({ posts }) {
                 <span className={styles.value}>{selectedStation.data.pressure.toFixed(0)} hPa</span>
               </div>
             </div>
+
+            <ShareStationButton station={selectedStation} />
 
             <div className={styles.location}>
               <p><strong>📍 Lokalizacja:</strong></p>

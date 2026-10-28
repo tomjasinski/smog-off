@@ -324,3 +324,15 @@
     font-size: 1.5rem;
   }
 }
+
+.rankingLink {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: #9ca3af;
+  text-underline-offset: 3px;
+}
+
+.rankingLink:hover {
+  color: #1d4ed8;
+  text-decoration-color: currentColor;
+}

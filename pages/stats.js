@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { groupCities, citySlug } from '../lib/cities';
 import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import ShareImageButton from '../components/ShareImageButton';
 import { renderRankingImage, renderDistributionImage } from '../lib/shareImage';
@@ -90,6 +91,9 @@ export default function StatsPage() {
   const cleanestCities = cities.slice(0, RANKING_SIZE);
   const dirtiestCities = cities.slice(-RANKING_SIZE).reverse();
 
+  // Miasta z własną podstroną (co najmniej MIN_STATIONS_FOR_CITY_PAGE stacji) są klikalne
+  const cityPageSlugs = new Set(groupCities(stations).map((c) => c.slug));
+
   const renderCityRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
       <h3 id={id}>{title}</h3>
@@ -98,7 +102,11 @@ export default function StatsPage() {
           <li key={c.city} className={styles.rankingItem}>
             <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
-              <strong>{c.city}</strong>
+              <strong>
+                {cityPageSlugs.has(citySlug(c.city))
+                  ? <Link href={`/miasto/${citySlug(c.city)}`} className={styles.rankingLink}>{c.city}</Link>
+                  : c.city}
+              </strong>
               <span className={styles.rankingCity}>stacji: {c.count}</span>
             </span>
             <span className={styles.rankingValues}>

@@ -226,12 +226,19 @@ export default function SmogMap({ posts }) {
       glRef.current = gl;
       gl.setWorkerUrl('/maplibre-gl-worker.mjs');
 
+      // Widok z adresu (np. link z podstrony miasta): ?lat=..&lng=..&zoom=..
+      const params = new URLSearchParams(window.location.search);
+      const viewLat = parseFloat(params.get('lat'));
+      const viewLng = parseFloat(params.get('lng'));
+      const viewZoom = parseFloat(params.get('zoom'));
+      const hasView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
+
       try {
         map = new gl.Map({
           container: containerRef.current,
           style: buildMapStyle(tilejson),
-          center: initialCenterRef.current,
-          zoom: 11,
+          center: hasView ? [viewLng, viewLat] : initialCenterRef.current,
+          zoom: hasView && Number.isFinite(viewZoom) ? Math.min(Math.max(viewZoom, 6), 18) : 11,
           minZoom: 6,
           maxZoom: 18,
           maxBounds: POLAND_BOUNDS,

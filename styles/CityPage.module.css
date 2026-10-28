@@ -1,0 +1,120 @@
+.lead {
+  margin: 0 0 1.5rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.lead a {
+  color: #1d4ed8;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.section {
+  margin-top: 2rem;
+}
+
+.section h2 {
+  margin-bottom: 0.75rem;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.table th,
+.table td {
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.table thead th {
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.table tbody th {
+  font-weight: 600;
+  color: #1f2937;
+  white-space: normal;
+  min-width: 12rem;
+}
+
+.stationName {
+  display: block;
+}
+
+.street {
+  display: block;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.level {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  margin-right: 0.4rem;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.level .dot {
+  margin-right: 0;
+}
+
+.mapLink {
+  margin: 1.5rem 0;
+  font-weight: 600;
+}
+
+.mapLink a,
+.cityList a,
+.cityLink {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.mapLink a:hover,
+.cityList a:hover,
+.cityLink:hover {
+  text-decoration: underline;
+}
+
+.cityList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.note {
+  margin-top: 2rem;
+  color: #6b7280;
+  font-size: 0.8rem;
+  line-height: 1.5;
+}

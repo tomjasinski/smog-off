@@ -72,7 +72,7 @@ npm run build
 Uruchom produkcyjnie
 npm start
 
-Na słabszym komputerze (mało wolnej pamięci RAM) domyślny build może zakończyć się błędem braku pamięci. Wtedy użyj
+Na słabszym komputerze (mało wolnej pamięci RAM, brak pliku stronicowania) domyślny build może zakończyć się błędem braku pamięci. Wtedy użyj
 npm run build:local
-który ogranicza liczbę workerów (domyślnie 2; zmienisz to zmienną NEXT_BUILD_CPUS, np. NEXT_BUILD_CPUS=1).
+który używa jednego workera i limitu sterty Node 700 MB (zmienisz to zmiennymi NEXT_BUILD_CPUS i NEXT_BUILD_HEAP_MB). Przed buildem zamknij serwery dev/start i zbędne programy.
 

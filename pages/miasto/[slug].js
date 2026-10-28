@@ -3,6 +3,8 @@ import Link from 'next/link';
 import Footer from '../../components/Footer';
 import StationArticles from '../../components/StationArticles';
 import LevelBadge from '../../components/LevelBadge';
+import ShareImageButton from '../../components/ShareImageButton';
+import { renderCityImage } from '../../lib/shareImage';
 import { getFreshStations } from '../../lib/airQualityServer';
 import { getAllPosts } from '../../lib/blogPosts';
 import { groupCities } from '../../lib/cities';
@@ -78,6 +80,18 @@ export async function getStaticProps({ params }) {
 }
 
 const timeOf = (timestamp) => (timestamp ? timestamp.slice(11, 16) : '–');
+
+// Grafika do udostępnienia: dane miasta (mediany) i jego stacje od najwyższego PM2.5
+function buildCityImage(city) {
+  const latest = city.stations.map((s) => s.timestamp).filter(Boolean).sort().pop();
+  return renderCityImage({
+    title: `Jakość powietrza: ${city.name}`,
+    subtitle: `Mediana odczytów ze stacji w mieście (µg/m³), poziom według indeksu EAQI.`,
+    city,
+    rows: city.stations.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.street, color: s.color, label: s.label, pm25: s.pm25, pm10: s.pm10 })),
+    footer: ['Dane: ESA Poland', 'progi EAQI (EEA, WHO 2021)', latest ? `pomiar z ${latest.slice(0, 16)}` : null].filter(Boolean).join(' · ')
+  });
+}
 
 export default function CityPage({ city, others, posts, generatedAt }) {
   const url = `${SITE_URL}/miasto/${city.slug}`;
@@ -157,6 +171,12 @@ export default function CityPage({ city, others, posts, generatedAt }) {
               </table>
             </div>
           </section>
+
+          <ShareImageButton
+            title={`Jakość powietrza: ${city.name}`}
+            text={`Jakość powietrza w mieście ${city.name} (SmogOFF)`}
+            render={() => buildCityImage(city)}
+          />
 
           <p className={styles.mapLink}>
             <Link href={`/?lat=${city.lat.toFixed(4)}&lng=${city.lng.toFixed(4)}&zoom=12`}>

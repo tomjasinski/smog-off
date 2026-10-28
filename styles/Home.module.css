@@ -16,8 +16,41 @@
 
 .headerContent {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.navLink {
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+}
+
+.navLink:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 1px;
+}
+
+@media (max-width: 380px) {
+  .navLink {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+  }
 }
 
 .headerContent h1 {

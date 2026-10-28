@@ -1,9 +1,11 @@
 'use client';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import MapLegend from './MapLegend';
 import ShareStationButton from './ShareStationButton';
+import StationArticles from './StationArticles';
+import BlogSheet from './BlogSheet';
 import { buildMapStyle, TILEJSON_URL } from '../lib/mapStyle';
 import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
@@ -143,99 +145,6 @@ function LocationButton({ map, gl }) {
         <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
       </svg>
     </button>
-  );
-}
-
-function BlogFloatingCards({ posts }) {
-  const scrollRef = useRef(null);
-  const [edges, setEdges] = useState({ atStart: true, atEnd: false });
-
-  const shuffledPosts = useMemo(() => {
-    return [...posts].sort(() => Math.random() - 0.5);
-  }, [posts]);
-
-  useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-
-    const updateEdges = () => {
-      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-      setEdges({
-        atStart: scrollContainer.scrollLeft <= 1,
-        atEnd: scrollContainer.scrollLeft >= maxScroll - 1
-      });
-    };
-
-    // Kółko myszy przewija karty poziomo, ale na brzegach oddaje przewijanie stronie
-    const handleWheel = (e) => {
-      if (e.deltaY === 0) return;
-      const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
-      const canScroll = e.deltaY < 0
-        ? scrollContainer.scrollLeft > 0
-        : scrollContainer.scrollLeft < maxScroll;
-      if (!canScroll) return;
-      e.preventDefault();
-      scrollContainer.scrollLeft += e.deltaY;
-    };
-
-    updateEdges();
-    scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
-    scrollContainer.addEventListener('scroll', updateEdges, { passive: true });
-    window.addEventListener('resize', updateEdges);
-
-    return () => {
-      scrollContainer.removeEventListener('wheel', handleWheel);
-      scrollContainer.removeEventListener('scroll', updateEdges);
-      window.removeEventListener('resize', updateEdges);
-    };
-  }, []);
-
-  const scrollByPage = (direction) => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    scrollContainer.scrollBy({
-      left: direction * scrollContainer.clientWidth * 0.8,
-      behavior: reduceMotion ? 'auto' : 'smooth'
-    });
-  };
-
-  return (
-    <div className={styles.floatingBlogWrapper} role="region" aria-label="Artykuły o jakości powietrza">
-      <button
-        type="button"
-        className={`${styles.blogScrollButton} ${styles.blogScrollLeft}`}
-        onClick={() => scrollByPage(-1)}
-        disabled={edges.atStart}
-        aria-label="Pokaż poprzednie artykuły"
-      >
-        <span aria-hidden="true">‹</span>
-      </button>
-      <div className={styles.floatingBlogCards} ref={scrollRef}>
-        {shuffledPosts.map((post, index) => (
-          <Link
-            key={post.slug}
-            href={`/blog/${post.slug}`}
-            className={styles.floatingCard}
-            style={{ animationDelay: `${index * 0.1}s` }}
-          >
-            <div className={styles.floatingCardContent}>
-              <span className={styles.floatingIcon} aria-hidden="true">📝</span>
-              <span className={styles.floatingTitle}>{post.title}</span>
-            </div>
-          </Link>
-        ))}
-      </div>
-      <button
-        type="button"
-        className={`${styles.blogScrollButton} ${styles.blogScrollRight}`}
-        onClick={() => scrollByPage(1)}
-        disabled={edges.atEnd}
-        aria-label="Pokaż kolejne artykuły"
-      >
-        <span aria-hidden="true">›</span>
-      </button>
-    </div>
   );
 }
 
@@ -456,7 +365,7 @@ export default function SmogMap({ posts }) {
 
       <MapLegend />
 
-      <BlogFloatingCards posts={posts} />
+      <BlogSheet posts={posts} />
 
 
       {selectedStation && (
@@ -540,6 +449,8 @@ export default function SmogMap({ posts }) {
               <p>{selectedStation.city}</p>
               {selectedStation.street && <p>{selectedStation.street}</p>}
             </div>
+            <StationArticles level={selectedStation.aqi.level} posts={posts} />
+
 
             <div className={styles.timestamp}>
               ⏱️ Aktualizacja: {new Date(selectedStation.timestamp).toLocaleString('pl-PL')}

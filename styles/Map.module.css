@@ -11,7 +11,7 @@
   top: 70px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 600;
+  z-index: 300; /* pod arkuszem z artykułami (400) */
   width: max-content;
   max-width: calc(100% - 24px);
   pointer-events: none;
@@ -137,158 +137,6 @@
   .locatingIcon {
     animation: none;
   }
-}
-
-/* === PŁYWAJĄCE MYDEŁKA BLOGOWE === */
-
-/* Wrapper dla mydełek - wyżej na mobile */
-.floatingBlogWrapper {
-  position: absolute;
-  bottom: 0px;
-  left: 0;
-  right: 0;
-  height: 10vh;
-  max-height: 100px;
-  min-height: 60px;
-  z-index: 400;
-  pointer-events: none;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(to top, rgba(249, 250, 251, 0.4), transparent);
-  backdrop-filter: blur(4px);
-}
-
-/* Kontener na karty - scrollowalny poziomo */
-.floatingBlogCards {
-  display: flex;
-  gap: 12px;
-  padding: 0 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  pointer-events: auto;
-  cursor: grab;
-  
-  /* Ukryj scrollbar */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.floatingBlogCards:active {
-  cursor: grabbing;
-}
-
-.floatingBlogCards::-webkit-scrollbar {
-  display: none;
-}
-
-/* Przyciski przewijania kart (alternatywa dla kółka myszy i gestów) */
-.blogScrollButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1.5px solid rgba(63, 81, 181, 0.4);
-  background: rgba(255, 255, 255, 0.92);
-  color: #3f51b5;
-  font-size: 1.4rem;
-  line-height: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 0 3px;
-  cursor: pointer;
-  pointer-events: auto;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.blogScrollButton:hover:not(:disabled) {
-  background: #fff;
-  border-color: #3f51b5;
-}
-
-.blogScrollButton:disabled {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.blogScrollLeft {
-  left: 4px;
-}
-
-.blogScrollRight {
-  right: 4px;
-}
-
-/* Pojedyncza karta blogowa */
-.floatingCard {
-  background: rgba(102, 126, 234, 0.15);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 20px;
-  padding: 0.6rem 1.2rem;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-  text-decoration: none;
-  transition: all 0.3s ease;
-  animation: floatIn 0.6s ease-out forwards;
-  opacity: 0;
-  border: 1.5px solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-  white-space: nowrap;
-  height: fit-content;
-  max-height: 42px;
-  display: block;
-}
-
-@keyframes floatIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.floatingCard:hover {
-  background: rgba(102, 126, 234, 0.3);
-  transform: translateY(-3px);
-  box-shadow: 0 6px 24px rgba(102, 126, 234, 0.25);
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-.floatingCard:active {
-  transform: translateY(-1px);
-}
-
-/* Zawartość karty */
-.floatingCardContent {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-}
-
-.floatingIcon {
-  font-size: 1rem;
-  flex-shrink: 0;
-}
-
-.floatingTitle {
-  color: #3f51b5;
-  font-weight: 700;
-  font-size: 0.85rem;
-  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 /* === CLUSTERY === */
@@ -526,26 +374,6 @@
 
 /* === RESPONSIVE === */
 
-@media (min-width: 640px) {
-  .floatingBlogWrapper {
-    bottom: 0px;
-  }
-  
-  .floatingBlogCards {
-    gap: 18px;
-    padding: 0 25px;
-  }
-  
-  .floatingCard {
-    padding: 0.9rem 1.75rem;
-    max-height: 56px;
-  }
-  
-  .floatingTitle {
-    font-size: 1rem;
-  }
-}
-
 @media (min-width: 768px) {
   .tipContent {
     font-size: 1rem;
@@ -557,29 +385,6 @@
   
   .legendGrid {
     grid-template-columns: repeat(3, 1fr);
-  }
-}
-
-@media (min-width: 1024px) {
-  .floatingBlogWrapper {
-    height: 5vh;
-    max-height: 45px;
-    min-height: 35px;
-    bottom: 0;
-  }
-  
-  .floatingBlogCards {
-    gap: 20px;
-    padding: 0 40px;
-  }
-  
-  .floatingCard {
-    padding: 0.5rem 1.2rem;
-    max-height: 38px;
-  }
-  
-  .floatingTitle {
-    font-size: 0.85rem;
   }
 }
 
@@ -598,7 +403,7 @@
   z-index: 600;
   padding: 0.5rem 1rem;
   border-radius: 999px;
-  background: #4c3a8f;
+  background: #1f2937;
   color: #fff;
   font-size: 0.85rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);

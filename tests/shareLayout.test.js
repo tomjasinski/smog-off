@@ -1,5 +1,28 @@
 import { describe, it, expect } from 'vitest';
-import { computeBannerLayout, BANNER_MIN, BANNER_MAX, MIN_SITE_NAME_SIZE } from '../lib/shareImage';
+import { computeBannerLayout, computeRowFit, BANNER_MIN, BANNER_MAX, MIN_SITE_NAME_SIZE } from '../lib/shareImage';
+
+describe('computeRowFit', () => {
+  it('przy małej liczbie wierszy pokazuje wszystkie i nic nie ukrywa', () => {
+    const fit = computeRowFit(600, 5);
+    expect(fit.shown).toBe(5);
+    expect(fit.hidden).toBe(0);
+  });
+
+  it('przy dużej liczbie wierszy pokazuje tyle, ile się zmieści, a reszta jest ukryta', () => {
+    const fit = computeRowFit(600, 80);
+    expect(fit.shown).toBeGreaterThan(0);
+    expect(fit.shown).toBeLessThan(80);
+    expect(fit.hidden).toBe(80 - fit.shown);
+    expect(fit.rowH).toBeGreaterThan(0);
+  });
+
+  it('wiersze razem z dopiskiem nie wchodzą na baner', () => {
+    const startY = 600;
+    const { shown, hidden, rowH } = computeRowFit(startY, 80);
+    const end = startY + shown * (rowH + 14) + (hidden > 0 ? 44 : 0);
+    expect(end).toBeLessThanOrEqual(1920 - 84 - BANNER_MIN);
+  });
+});
 
 describe('computeBannerLayout', () => {
   it('nazwa strony nigdy nie jest mniejsza niż etykiety legendy (44 px)', () => {

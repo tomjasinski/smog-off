@@ -25,7 +25,7 @@ export default function Home({ posts }) {
       <div className={styles.container}>
         <header className={styles.header}>
           <div className={styles.headerContent}>
-            <h1>SmogOFF</h1>
+            <h1>mapasmogu.pl</h1>
             <nav className={styles.nav} aria-label="Główna nawigacja">
               <Link href="/stats" className={styles.navLink}>Statystyki</Link>
               <Link href="/stacje" className={styles.navLink}>Miasta i stacje</Link>

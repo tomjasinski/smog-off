@@ -179,6 +179,7 @@
   gap: 0.6rem;
   padding: 0.6rem 0.75rem;
   background: #f9fafb;
+  border-left: 6px solid transparent;
   border-radius: 8px;
   color: #374151;
 }
@@ -325,14 +326,24 @@
   }
 }
 
+/* Miasto z własną podstroną: wyraźny link */
 .rankingLink {
-  color: inherit;
+  color: #1d4ed8;
   text-decoration: underline;
-  text-decoration-color: #9ca3af;
   text-underline-offset: 3px;
 }
 
+.rankingLink::after {
+  content: " ›";
+  display: inline-block;
+  text-decoration: none;
+}
+
 .rankingLink:hover {
-  color: #1d4ed8;
-  text-decoration-color: currentColor;
+  color: #1e3a8a;
+}
+
+.rankingLevel {
+  display: block;
+  margin-top: 0.25rem;
 }

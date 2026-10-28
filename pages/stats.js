@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
+import LevelBadge from '../components/LevelBadge';
 import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import ShareImageButton from '../components/ShareImageButton';
 import { renderRankingImage, renderDistributionImage } from '../lib/shareImage';
@@ -100,13 +101,14 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(c => (
-          <li key={c.city} className={styles.rankingItem}>
+          <li key={c.city} className={styles.rankingItem} style={{ borderLeftColor: c.aqi.color }}>
             <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>
                 <CityLink name={c.city} slugs={citySlugs} className={styles.rankingLink} />
               </strong>
               <span className={styles.rankingCity}>stacji: {c.count}</span>
+              <span className={styles.rankingLevel}><LevelBadge color={c.aqi.color} label={c.aqi.label} small /></span>
             </span>
             <span className={styles.rankingValues}>
               <span>PM2.5: <strong>{c.pm25}</strong></span>
@@ -124,7 +126,7 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(s => (
-          <li key={s.id} className={styles.rankingItem}>
+          <li key={s.id} className={styles.rankingItem} style={{ borderLeftColor: s.aqi.color }}>
             <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>{s.name}</strong>
@@ -133,6 +135,7 @@ export default function StatsPage() {
                   <CityLink name={s.city} slugs={citySlugs} className={styles.rankingLink} />
                 </span>
               )}
+              <span className={styles.rankingLevel}><LevelBadge color={s.aqi.color} label={s.aqi.label} small /></span>
             </span>
             <span className={styles.rankingValues}>
               <span>PM2.5: <strong>{s.data.pm25}</strong></span>
@@ -153,9 +156,9 @@ export default function StatsPage() {
     ].filter(Boolean).join(' · ');
 
   const stationRows = (list) =>
-    list.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.city, color: s.aqi.color, pm25: s.data.pm25, pm10: s.data.pm10 }));
+    list.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.city, color: s.aqi.color, label: s.aqi.label, pm25: s.data.pm25, pm10: s.data.pm10 }));
   const cityRows = (list) =>
-    list.map((c, i) => ({ rank: i + 1, name: c.city, sub: `stacji: ${c.count}`, color: c.aqi.color, pm25: c.pm25, pm10: c.pm10 }));
+    list.map((c, i) => ({ rank: i + 1, name: c.city, sub: `stacji: ${c.count}`, color: c.aqi.color, label: c.aqi.label, pm25: c.pm25, pm10: c.pm10 }));
 
   // Każdy ranking (najczystsze / najbardziej zanieczyszczone) ma własną grafikę
   const rankingShare = ({ title, subtitle, kind, accent, rows }) => ({

@@ -1,9 +1,9 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
-import { getReadableTextColor } from '../lib/aqiLevels';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
+import LevelBadge from '../components/LevelBadge';
 import styles from '../styles/StationsPage.module.css';
 
 const PAGE_SIZE = 50;
@@ -115,31 +115,24 @@ export default function StationsPage() {
                     </caption>
                     <thead>
                       <tr>
-                        <th scope="col">Stacja</th>
-                        <th scope="col">Miejscowość</th>
+                        <th scope="col">Stacja i jakość powietrza</th>
+                        <th scope="col" className={styles.cityCol}>Miejscowość</th>
                         <th scope="col" className={styles.num}>PM2.5</th>
                         <th scope="col" className={styles.num}>PM10</th>
-                        <th scope="col">Jakość</th>
                       </tr>
                     </thead>
                     <tbody>
                       {shown.map(s => (
                         <tr key={s.id}>
-                          <th scope="row" className={styles.stationName}>
+                          <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${s.aqi.color}` }}>
                             {s.name}
                             {s.street && <span className={styles.street}>{s.street}</span>}
+                            <span className={styles.cityInline}><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></span>
+                            <span className={styles.levelRow}><LevelBadge color={s.aqi.color} label={s.aqi.label} /></span>
                           </th>
-                          <td><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></td>
-                          <td className={styles.num}>{s.data.pm25}</td>
-                          <td className={styles.num}>{s.data.pm10}</td>
-                          <td>
-                            <span
-                              className={styles.badge}
-                              style={{ backgroundColor: s.aqi.color, color: getReadableTextColor(s.aqi.color) }}
-                            >
-                              {s.aqi.label}
-                            </span>
-                          </td>
+                          <td className={styles.cityCol}><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></td>
+                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm25}</td>
+                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm10}</td>
                         </tr>
                       ))}
                     </tbody>

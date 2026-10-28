@@ -104,7 +104,7 @@
 }
 
 .stationName {
-  min-width: 14rem;
+  min-width: 0;
   overflow-wrap: anywhere;
 }
 
@@ -116,8 +116,10 @@
 }
 
 .num {
+  width: 4.2rem;
   text-align: right !important;
   font-variant-numeric: tabular-nums;
+  font-weight: 700;
   white-space: nowrap;
 }
 
@@ -161,16 +163,44 @@
     grid-template-columns: 1fr;
   }
 
-  .stationName {
-    min-width: 11rem;
+  .cityCol {
+    display: none;
   }
 }
 
+/* Miejscowość z własną podstroną: wyraźnie wygląda jak link */
 .cityLink {
   color: #1d4ed8;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cityLink::after {
+  content: " ›";
+  display: inline-block;
   text-decoration: none;
 }
 
 .cityLink:hover {
-  text-decoration: underline;
+  color: #1e3a8a;
+}
+
+.levelRow {
+  display: block;
+  margin-top: 0.35rem;
+}
+
+.cityInline {
+  display: none;
+  margin-top: 0.15rem;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+@media (max-width: 768px) {
+  .cityInline {
+    display: block;
+  }
 }

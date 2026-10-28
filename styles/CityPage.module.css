@@ -52,7 +52,6 @@
   font-weight: 600;
   color: #1f2937;
   white-space: normal;
-  min-width: 12rem;
 }
 
 .stationName {
@@ -117,4 +116,23 @@
   color: #6b7280;
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+.levelRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.time {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }

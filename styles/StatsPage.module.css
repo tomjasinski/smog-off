@@ -3,13 +3,13 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   min-height: 100vh;
-  background: #fafbfc;
+  background: var(--page);
 }
 
 .backLink {
   display: inline-block;
   margin-bottom: 2rem;
-  color: #3f51b5;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
   font-size: 1rem;
@@ -17,12 +17,12 @@
 }
 
 .backLink:hover {
-  color: #764ba2;
+  color: var(--accent-hover);
   transform: translateX(-4px);
 }
 
 .article {
-  background: white;
+  background: var(--surface);
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -30,13 +30,13 @@
 
 .article h1 {
   margin-bottom: 2rem;
-  color: #1f2937;
+  color: var(--text);
   font-size: 2rem;
 }
 
 .article h2 {
   margin: 2rem 0 1rem;
-  color: #374151;
+  color: var(--text-2);
   font-size: 1.5rem;
 }
 
@@ -52,19 +52,19 @@
   flex-direction: column;
   gap: 0.5rem;
   padding: 1.5rem;
-  background: #f9fafb;
+  background: var(--surface-2);
   border-radius: 12px;
 }
 
 .statLabel {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .statValue {
   font-size: 1.75rem;
-  color: #1f2937;
+  color: var(--text);
   font-weight: 700;
 }
 
@@ -106,25 +106,25 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  background: #f9fafb;
+  background: var(--surface-2);
   border-radius: 8px;
 }
 
 .legendLabel {
   flex: 1;
-  color: #374151;
+  color: var(--text-2);
   font-weight: 600;
 }
 
 .legendValue {
-  color: #374151;
+  color: var(--text-2);
   font-weight: 700;
   font-size: 0.9rem;
   white-space: nowrap;
 }
 
 .legendShare {
-  color: #6b7280;
+  color: var(--text-muted);
   font-weight: 400;
 }
 
@@ -143,7 +143,7 @@
 
 .rankingNote {
   margin: 0 0 1rem;
-  color: #4b5563;
+  color: var(--text-3);
   font-size: 0.9rem;
 }
 
@@ -159,7 +159,7 @@
 
 .rankingColumn h3 {
   margin: 0 0 0.75rem;
-  color: #374151;
+  color: var(--text-2);
   font-size: 1.1rem;
 }
 
@@ -178,9 +178,10 @@
   align-items: center;
   gap: 0.6rem;
   padding: 0.6rem 0.75rem;
-  background: #f9fafb;
+  background: var(--surface-2);
+  border-left: 6px solid transparent;
   border-radius: 8px;
-  color: #374151;
+  color: var(--text-2);
 }
 
 .rankingItem::before {
@@ -188,7 +189,7 @@
   content: counter(rank) ".";
   min-width: 1.6rem;
   font-weight: 700;
-  color: #4b5563;
+  color: var(--text-3);
 }
 
 .rankingDot {
@@ -211,7 +212,7 @@
 }
 
 .rankingCity {
-  color: #4b5563;
+  color: var(--text-3);
   font-size: 0.8rem;
 }
 
@@ -220,14 +221,14 @@
   flex-direction: column;
   align-items: flex-end;
   font-size: 0.8rem;
-  color: #4b5563;
+  color: var(--text-3);
   white-space: nowrap;
 }
 
 .aqiLevelsSection {
   margin-top: 2rem;
   padding-top: 2rem;
-  border-top: 2px solid #e5e7eb;
+  border-top: 2px solid var(--border);
 }
 
 .levelsTable {
@@ -239,14 +240,14 @@
 .levelsTable th,
 .levelsTable td {
   padding: 0.85rem 1rem;
-  background: #f9fafb;
+  background: var(--surface-2);
   text-align: left;
 }
 
 .levelsTable thead th {
   padding: 0 1rem;
   background: none;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 600;
 }
@@ -255,13 +256,13 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: #374151;
+  color: var(--text-2);
   font-weight: 600;
   border-radius: 8px 0 0 8px;
 }
 
 .levelsTable td {
-  color: #374151;
+  color: var(--text-2);
   font-weight: 700;
   font-size: 0.9rem;
   white-space: nowrap;
@@ -292,8 +293,8 @@
 .spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid #e5e7eb;
-  border-top-color: #667eea;
+  border: 4px solid var(--border);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -325,14 +326,24 @@
   }
 }
 
+/* Miasto z własną podstroną: wyraźny link */
 .rankingLink {
-  color: inherit;
+  color: var(--link);
   text-decoration: underline;
-  text-decoration-color: #9ca3af;
   text-underline-offset: 3px;
 }
 
+.rankingLink::after {
+  content: " ›";
+  display: inline-block;
+  text-decoration: none;
+}
+
 .rankingLink:hover {
-  color: #1d4ed8;
-  text-decoration-color: currentColor;
+  color: var(--link-hover);
+}
+
+.rankingLevel {
+  display: block;
+  margin-top: 0.25rem;
 }

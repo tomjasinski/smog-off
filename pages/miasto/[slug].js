@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Footer from '../../components/Footer';
 import StationArticles from '../../components/StationArticles';
+import LevelBadge from '../../components/LevelBadge';
 import { getFreshStations } from '../../lib/airQualityServer';
 import { getAllPosts } from '../../lib/blogPosts';
 import { groupCities } from '../../lib/cities';
@@ -10,7 +11,7 @@ import { getReadableTextColor } from '../../lib/aqiLevels';
 import pageStyles from '../../styles/StatsPage.module.css';
 import styles from '../../styles/CityPage.module.css';
 
-const REVALIDATE_SECONDS = 900;
+const REVALIDATE_SECONDS = 600;
 // Ile innych miast pokazujemy na dole strony (miasta z największą liczbą stacji; linkowanie wewnętrzne)
 const OTHER_CITIES_COUNT = 20;
 
@@ -132,29 +133,24 @@ export default function CityPage({ city, others, posts, generatedAt }) {
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th scope="col">Stacja</th>
+                    <th scope="col">Stacja i poziom</th>
                     <th scope="col">PM2.5</th>
                     <th scope="col">PM10</th>
-                    <th scope="col">Poziom</th>
-                    <th scope="col">Pomiar</th>
                   </tr>
                 </thead>
                 <tbody>
                   {city.stations.map((s) => (
                     <tr key={s.id}>
-                      <th scope="row">
+                      <th scope="row" style={{ borderLeft: `6px solid ${s.color}` }}>
                         <span className={styles.stationName}>{s.name}</span>
                         {s.street && <span className={styles.street}>{s.street}</span>}
-                      </th>
-                      <td>{s.pm25}</td>
-                      <td>{s.pm10}</td>
-                      <td>
-                        <span className={styles.level}>
-                          <span className={styles.dot} style={{ backgroundColor: s.color }} aria-hidden="true"></span>
-                          {s.label}
+                        <span className={styles.levelRow}>
+                          <LevelBadge color={s.color} label={s.label} />
+                          <span className={styles.time}>pomiar {timeOf(s.timestamp)}</span>
                         </span>
-                      </td>
-                      <td>{timeOf(s.timestamp)}</td>
+                      </th>
+                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm25}</td>
+                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm10}</td>
                     </tr>
                   ))}
                 </tbody>

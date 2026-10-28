@@ -12,7 +12,7 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <>
       <Head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
         <meta name="application-name" content="SmogOFF" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

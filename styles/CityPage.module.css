@@ -1,11 +1,11 @@
 .lead {
   margin: 0 0 1.5rem;
-  color: #374151;
+  color: var(--text-2);
   line-height: 1.6;
 }
 
 .lead a {
-  color: #1d4ed8;
+  color: var(--link);
 }
 
 .badge {
@@ -36,23 +36,22 @@
 .table th,
 .table td {
   padding: 0.6rem 0.75rem;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   text-align: left;
   vertical-align: top;
   white-space: nowrap;
 }
 
 .table thead th {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .table tbody th {
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text);
   white-space: normal;
-  min-width: 12rem;
 }
 
 .stationName {
@@ -61,7 +60,7 @@
 
 .street {
   display: block;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.8rem;
   font-weight: 400;
 }
@@ -93,7 +92,7 @@
 .mapLink a,
 .cityList a,
 .cityLink {
-  color: #1d4ed8;
+  color: var(--link);
   text-decoration: none;
 }
 
@@ -114,7 +113,26 @@
 
 .note {
   margin-top: 2rem;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+.levelRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.time {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
+.value {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }

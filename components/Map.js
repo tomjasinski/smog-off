@@ -7,7 +7,9 @@ import ShareStationButton from './ShareStationButton';
 import StationArticles from './StationArticles';
 import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
-import { buildMapStyle, TILEJSON_URL } from '../lib/mapStyle';
+import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
+import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
+import ThemeToggle from './ThemeToggle';
 import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
@@ -15,6 +17,9 @@ import styles from '../styles/Map.module.css';
 // [zachód, południe, wschód, północ]
 const POLAND_BOUNDS = [[13.5, 48.5], [24.8, 55.4]];
 const EMPTY = { type: 'FeatureCollection', features: [] };
+
+// Jak często odświeżamy dane stacji (serwer i tak pobiera je ze źródła najwyżej co 10 minut)
+const REFRESH_MS = 10 * 60 * 1000;
 
 // Gdy w widoku jest nie więcej stacji, pokazujemy je wszystkie (bez klastrów); przy większym obszarze klastrujemy
 const MAX_UNCLUSTERED_IN_VIEW = 20;
@@ -204,6 +209,7 @@ export default function SmogMap({ posts }) {
   const [mapReady, setMapReady] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
+  const [theme, setThemeState] = useState('dark');
 
   const containerRef = useRef(null);
   const glRef = useRef(null);
@@ -246,7 +252,7 @@ export default function SmogMap({ posts }) {
       try {
         map = new gl.Map({
           container: containerRef.current,
-          style: buildMapStyle(tilejson),
+          style: buildMapStyle(tilejson, getResolvedTheme()),
           center: hasView ? [viewLng, viewLat] : initialCenterRef.current,
           zoom: hasView && Number.isFinite(viewZoom) ? Math.min(Math.max(viewZoom, 6), 18) : 11,
           minZoom: 6,
@@ -322,6 +328,17 @@ export default function SmogMap({ posts }) {
     };
   }, []);
 
+  // Motyw (systemowy lub wybrany przyciskiem): odczyt po zamontowaniu i nasłuch zmian
+  useEffect(() => {
+    setThemeState(getResolvedTheme());
+    return subscribeTheme(setThemeState);
+  }, []);
+
+  // Kolory mapy i warstw stacji zmieniamy bez przeładowania stylu
+  useEffect(() => {
+    if (mapInstance) applyMapTheme(mapInstance, theme);
+  }, [mapInstance, theme]);
+
   // Dane stacji trafiają do źródeł GeoJSON (klastrowanego i płaskiego, dla stref oddziaływania)
   useEffect(() => {
     if (!mapInstance) return;
@@ -365,9 +382,24 @@ export default function SmogMap({ posts }) {
   // żeby nie blokować pierwszego malowania
   useEffect(() => {
     if (!mapReady) return;
-    fetchAirQuality();
-    const interval = setInterval(fetchAirQuality, 300000);
-    return () => clearInterval(interval);
+    let lastFetch = Date.now();
+    const refresh = () => {
+      lastFetch = Date.now();
+      fetchAirQuality();
+    };
+    refresh();
+    // Nie pobieramy w tle: odświeżamy, gdy karta jest widoczna, a po powrocie do niej tylko jeśli dane są starsze niż interwał
+    const interval = setInterval(() => {
+      if (!document.hidden) refresh();
+    }, REFRESH_MS);
+    const onVisible = () => {
+      if (!document.hidden && Date.now() - lastFetch > REFRESH_MS) refresh();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [mapReady]);
 
   async function fetchAirQuality() {
@@ -399,6 +431,7 @@ export default function SmogMap({ posts }) {
 
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
+      <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
 
       {loading && (
         <div className={styles.dataLoading} role="status">

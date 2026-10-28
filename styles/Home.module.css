@@ -67,6 +67,7 @@
 
 .mapContainer {
   height: calc(100vh - 85px); /* Zostawia pasek nagłówka i skrawek artykułów poniżej mapy */
+  height: calc(100dvh - 85px); /* dvh: na telefonach uwzględnia pasek przeglądarki */
   min-height: 400px;
   width: 100%;
   position: relative;
@@ -74,7 +75,7 @@
 
 .blogSection {
   padding: 0;
-  background: #f9fafb;
+  background: var(--surface-2);
   min-height: auto;
 }
 
@@ -92,7 +93,7 @@
   justify-content: center;
   height: 100%;
   font-size: 1.1rem;
-  color: #3f51b5;
+  color: var(--accent);
 }
 
 @media (min-width: 640px) {
@@ -106,6 +107,7 @@
 
   .mapContainer {
     height: calc(100vh - 65px);
+    height: calc(100dvh - 65px);
   }
 }
 
@@ -121,6 +123,7 @@
 
   .mapContainer {
     height: calc(100vh - 65px);
+    height: calc(100dvh - 65px);
   }
   
   .blogGrid {

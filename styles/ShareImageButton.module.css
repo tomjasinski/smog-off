@@ -11,10 +11,10 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.55rem 1rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-strong);
   border-radius: 999px;
-  background: #fff;
-  color: #1f2937;
+  background: var(--surface);
+  color: var(--text);
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
@@ -22,7 +22,7 @@
 }
 
 .button:hover:not(:disabled) {
-  background: #f3f4f6;
+  background: var(--surface-3);
 }
 
 .button:disabled {
@@ -33,7 +33,7 @@
 .button:focus-visible,
 .primary:focus-visible,
 .secondary:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -62,7 +62,7 @@
   max-height: 100%;
   padding: 1rem;
   border-radius: 16px;
-  background: #fff;
+  background: var(--surface);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
@@ -70,20 +70,25 @@
   margin: 0;
   padding-right: 2.5rem;
   font-size: 1.05rem;
-  color: #111827;
+  color: var(--text);
 }
 
 .previewBox {
+  display: flex;
+  justify-content: center;
   min-height: 0;
-  overflow: auto;
+  overflow: hidden;
   border-radius: 10px;
   background: #0b0e13;
 }
 
+/* Grafiki są pionowe (9:16): podgląd mieści się w oknie bez przewijania, pełny rozmiar jest w pliku PNG */
 .preview {
   display: block;
-  width: 100%;
+  width: auto;
+  max-width: 100%;
   height: auto;
+  max-height: min(68vh, 720px);
 }
 
 .actions {
@@ -104,15 +109,15 @@
 }
 
 .primary {
-  border: 1px solid #1f2937;
-  background: #1f2937;
-  color: #fff;
+  border: 1px solid var(--text);
+  background: var(--text);
+  color: var(--surface);
 }
 
 .secondary {
-  border: 1px solid #d1d5db;
-  background: #fff;
-  color: #1f2937;
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
 }
 
 .closeButton {
@@ -127,16 +132,16 @@
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: #f3f4f6;
-  color: #1f2937;
+  background: var(--surface-3);
+  color: var(--text);
   cursor: pointer;
 }
 
 .closeButton:hover {
-  background: #e5e7eb;
+  background: var(--border);
 }
 
 .closeButton:focus-visible {
-  outline: 3px solid #2563eb;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }

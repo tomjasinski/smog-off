@@ -9,6 +9,8 @@ import StatsOverlay from './StatsOverlay';
 import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
+const POLAND_BOUNDS = [[48.5, 13.5], [55.4, 24.8]];
+
 function MapInstructions() {
   const [showTip, setShowTip] = useState(true);
   
@@ -503,6 +505,10 @@ export default function Map({ posts }) {
         zoomControl={true}
         scrollWheelZoom={true}
         preferCanvas={true}
+        minZoom={6}
+        maxZoom={19}
+        maxBounds={POLAND_BOUNDS}
+        maxBoundsViscosity={0.8}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'

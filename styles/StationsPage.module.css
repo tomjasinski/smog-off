@@ -165,3 +165,12 @@
     min-width: 11rem;
   }
 }
+
+.cityLink {
+  color: #1d4ed8;
+  text-decoration: none;
+}
+
+.cityLink:hover {
+  text-decoration: underline;
+}

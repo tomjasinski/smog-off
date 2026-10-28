@@ -371,12 +371,24 @@
   line-height: 18px;
 }
 
+/* Widoczne pole ma 18 px, ale obszar kliknięcia 24 px (minimum WCAG 2.2 dla celów dotykowych) */
 .map :global(.maplibregl-ctrl-attrib-button) {
-  top: 0;
-  right: 0;
-  width: 18px;
-  height: 18px;
+  top: -3px;
+  right: -3px;
+  width: 24px;
+  height: 24px;
   background-size: 13px;
   background-repeat: no-repeat;
   background-position: center;
+}
+
+.cityLink {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.cityLink:hover {
+  color: #1d4ed8;
 }

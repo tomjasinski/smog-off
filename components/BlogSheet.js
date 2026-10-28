@@ -33,6 +33,8 @@ export default function BlogSheet({ posts }) {
   if (ordered.length === 0) return null;
 
   const onPointerDown = (e) => {
+    // Bez przechwycenia wskaźnika myszka poza przyciskiem nie wyśle pointerup do tego elementu
+    e.currentTarget.setPointerCapture?.(e.pointerId);
     dragRef.current = { startY: e.clientY, dragged: false };
   };
 
@@ -63,7 +65,7 @@ export default function BlogSheet({ posts }) {
   return (
     <section
       className={`${styles.sheet} ${open ? styles.open : ''}`}
-      aria-label="Artykuły o jakości powietrza"
+      aria-label="Wybrane artykuły"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}

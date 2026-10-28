@@ -11,6 +11,8 @@ import pageStyles from '../../styles/StatsPage.module.css';
 import styles from '../../styles/CityPage.module.css';
 
 const REVALIDATE_SECONDS = 900;
+// Ile innych miast pokazujemy na dole strony (miasta z największą liczbą stacji; linkowanie wewnętrzne)
+const OTHER_CITIES_COUNT = 20;
 
 export async function getStaticPaths() {
   try {
@@ -65,7 +67,7 @@ export async function getStaticProps({ params }) {
       others: cities
         .filter((c) => c.slug !== city.slug)
         .sort((a, b) => b.count - a.count)
-        .slice(0, 8)
+        .slice(0, OTHER_CITIES_COUNT)
         .map((c) => ({ name: c.name, slug: c.slug, color: c.aqi.color, pm25: c.pm25 })),
       posts: getAllPosts().map(({ slug, title }) => ({ slug, title })),
       generatedAt: new Date().toISOString()
@@ -93,7 +95,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
         <meta property="og:url" content={url} />
       </Head>
 
-      <div className={pageStyles.container}>
+      <main className={pageStyles.container}>
         <Link href="/" className={pageStyles.backLink}>← Powrót do mapy</Link>
         {' · '}
         <Link href="/miasta" className={pageStyles.backLink}>Wszystkie miasta</Link>
@@ -189,7 +191,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
             (wygenerowano {generatedAt.slice(0, 16).replace('T', ' ')} UTC). Pomijamy pomiary starsze niż kilka godzin i odczyty poniżej 1 µg/m³.
           </p>
         </article>
-      </div>
+      </main>
       <Footer />
     </>
   );

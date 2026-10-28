@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { titleCasePl, citySlug, groupCities, MIN_STATIONS_FOR_CITY_PAGE } from '../lib/cities';
+import { titleCasePl, citySlug, groupCities, cityPageSlugs, MIN_STATIONS_FOR_CITY_PAGE } from '../lib/cities';
 
 const station = (city, pm25, pm10 = pm25 + 5) => ({
   id: `${city}-${pm25}`,
@@ -66,5 +66,14 @@ describe('groupCities', () => {
   it('sortuje miasta alfabetycznie z polskimi znakami', () => {
     const stations = [...five('ŻYWIEC'), ...five('ŁÓDŹ'), ...five('ZABRZE'), ...five('LUBLIN')];
     expect(groupCities(stations).map((c) => c.name)).toEqual(['Lublin', 'Łódź', 'Zabrze', 'Żywiec']);
+  });
+});
+
+describe('cityPageSlugs', () => {
+  it('zwraca slugi tylko miast z podstroną', () => {
+    const five = (city) => [0, 1, 2, 3, 4].map((i) => station(city, 10 + i));
+    const slugs = cityPageSlugs([...five('ŁÓDŹ'), ...five('KOŁO').slice(0, 2)]);
+    expect(slugs.has('lodz')).toBe(true);
+    expect(slugs.has('kolo')).toBe(false);
   });
 });

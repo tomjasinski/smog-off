@@ -33,7 +33,7 @@ export default function CitiesPage({ cities }) {
         <link rel="canonical" href={`${SITE_URL}/miasta`} />
       </Head>
 
-      <div className={pageStyles.container}>
+      <main className={pageStyles.container}>
         <Link href="/" className={pageStyles.backLink}>← Powrót do mapy</Link>
         {' · '}
         <Link href="/stats" className={pageStyles.backLink}>Statystyki</Link>
@@ -75,7 +75,7 @@ export default function CitiesPage({ cities }) {
             </table>
           </div>
         </article>
-      </div>
+      </main>
       <Footer />
     </>
   );

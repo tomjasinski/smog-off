@@ -3,7 +3,8 @@ import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
-import { groupCities, citySlug } from '../lib/cities';
+import { cityPageSlugs } from '../lib/cities';
+import CityLink from '../components/CityLink';
 import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import ShareImageButton from '../components/ShareImageButton';
 import { renderRankingImage, renderDistributionImage } from '../lib/shareImage';
@@ -92,7 +93,7 @@ export default function StatsPage() {
   const dirtiestCities = cities.slice(-RANKING_SIZE).reverse();
 
   // Miasta z własną podstroną (co najmniej MIN_STATIONS_FOR_CITY_PAGE stacji) są klikalne
-  const cityPageSlugs = new Set(groupCities(stations).map((c) => c.slug));
+  const citySlugs = cityPageSlugs(stations);
 
   const renderCityRanking = (title, list, id, share) => (
     <section className={styles.rankingColumn} aria-labelledby={id}>
@@ -103,9 +104,7 @@ export default function StatsPage() {
             <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>
-                {cityPageSlugs.has(citySlug(c.city))
-                  ? <Link href={`/miasto/${citySlug(c.city)}`} className={styles.rankingLink}>{c.city}</Link>
-                  : c.city}
+                <CityLink name={c.city} slugs={citySlugs} className={styles.rankingLink} />
               </strong>
               <span className={styles.rankingCity}>stacji: {c.count}</span>
             </span>
@@ -129,7 +128,11 @@ export default function StatsPage() {
             <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>{s.name}</strong>
-              {s.city && <span className={styles.rankingCity}>{s.city}</span>}
+              {s.city && (
+                <span className={styles.rankingCity}>
+                  <CityLink name={s.city} slugs={citySlugs} className={styles.rankingLink} />
+                </span>
+              )}
             </span>
             <span className={styles.rankingValues}>
               <span>PM2.5: <strong>{s.data.pm25}</strong></span>
@@ -186,7 +189,7 @@ export default function StatsPage() {
         <meta name="description" content="Zbiorcze statystyki jakości powietrza w Polsce: średnie stężenia PM2.5 i PM10 oraz liczba stacji w poszczególnych kategoriach." />
       </Head>
 
-      <div className={styles.container}>
+      <main className={styles.container}>
         <Link href="/" className={styles.backLink}>
           ← Powrót do mapy
         </Link>
@@ -322,7 +325,7 @@ export default function StatsPage() {
             </p>
           </div>
         </article>
-      </div>
+      </main>
     </>
   );
 }

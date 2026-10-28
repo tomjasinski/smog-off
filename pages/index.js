@@ -17,8 +17,10 @@ export default function Home({ posts }) {
         <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="" />
       </Head>
 
-      <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>
-      <Link href="/stacje" className="skip-link" style={{ left: '220px' }}>Lista stacji (alternatywa dla mapy)</Link>
+      <nav aria-label="Skróty">
+        <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>
+        <Link href="/stacje" className="skip-link" style={{ left: '220px' }}>Lista stacji (alternatywa dla mapy)</Link>
+      </nav>
 
       <div className={styles.container}>
         <header className={styles.header}>

@@ -1,18 +1,24 @@
 'use client';
 import 'maplibre-gl/dist/maplibre-gl.css';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
 import MapLegend from './MapLegend';
 import ShareStationButton from './ShareStationButton';
 import StationArticles from './StationArticles';
+import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
 import { buildMapStyle, TILEJSON_URL } from '../lib/mapStyle';
+import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
 // [zachód, południe, wschód, północ]
 const POLAND_BOUNDS = [[13.5, 48.5], [24.8, 55.4]];
 const EMPTY = { type: 'FeatureCollection', features: [] };
+
+// Gdy w widoku jest nie więcej stacji, pokazujemy je wszystkie (bez klastrów); przy większym obszarze klastrujemy
+const MAX_UNCLUSTERED_IN_VIEW = 20;
+const CLUSTER_LAYERS = ['cl-circle', 'cl-count', 'pt'];
 
 // Orientacyjny zasięg oddziaływania stacji (promień w metrach).
 // Nie ma jednej normy: dyrektywa 2008/50/EC opisuje stacje tła miejskiego jako reprezentatywne dla
@@ -187,6 +193,8 @@ function addMapLayers(map) {
     paint: { 'text-color': '#ffffff' }
   });
   map.addLayer({ id: 'pt', type: 'circle', source: 'stations-cl', filter: ['!', ['has', 'point_count']], paint: POINT_PAINT });
+  // Wszystkie stacje bez klastrowania, włączane gdy w widoku jest ich niewiele
+  map.addLayer({ id: 'pt-flat', type: 'circle', source: 'stations-flat', layout: { visibility: 'none' }, paint: POINT_PAINT });
 }
 
 export default function SmogMap({ posts }) {
@@ -200,6 +208,8 @@ export default function SmogMap({ posts }) {
   const containerRef = useRef(null);
   const glRef = useRef(null);
   const stationsByIdRef = useRef(new Map());
+  const stationsListRef = useRef([]);
+  const updateViewRef = useRef(null);
   const initialCenterRef = useRef([16.9252, 52.4064]);
 
   useEffect(() => {
@@ -261,7 +271,27 @@ export default function SmogMap({ posts }) {
         if (cancelled) return;
         addMapLayers(map);
 
-        const hitTest = (point) => map.queryRenderedFeatures(point, { layers: ['cl-circle', 'pt'] })[0];
+        const hitTest = (point) => map.queryRenderedFeatures(point, { layers: ['cl-circle', 'pt', 'pt-flat'] })[0];
+
+        // Do 20 stacji w widoku: wszystkie jako pojedyncze punkty, więcej: klastry
+        let flatMode = false;
+        const updateView = () => {
+          const b = map.getBounds();
+          let visible = 0;
+          for (const s of stationsListRef.current) {
+            if (s.longitude >= b.getWest() && s.longitude <= b.getEast() && s.latitude >= b.getSouth() && s.latitude <= b.getNorth()) {
+              visible++;
+              if (visible > MAX_UNCLUSTERED_IN_VIEW) break;
+            }
+          }
+          const flat = visible > 0 && visible <= MAX_UNCLUSTERED_IN_VIEW;
+          if (flat === flatMode) return;
+          flatMode = flat;
+          CLUSTER_LAYERS.forEach((id) => map.setLayoutProperty(id, 'visibility', flat ? 'none' : 'visible'));
+          map.setLayoutProperty('pt-flat', 'visibility', flat ? 'visible' : 'none');
+        };
+        updateViewRef.current = updateView;
+        map.on('moveend', updateView);
 
         map.on('click', (e) => {
           const feature = hitTest(e.point);
@@ -286,6 +316,7 @@ export default function SmogMap({ posts }) {
 
     return () => {
       cancelled = true;
+      updateViewRef.current = null;
       setMapInstance(null);
       if (map) map.remove();
     };
@@ -296,9 +327,14 @@ export default function SmogMap({ posts }) {
     if (!mapInstance) return;
     const points = { type: 'FeatureCollection', features: airData.map(stationFeature) };
     stationsByIdRef.current = new Map(airData.map((s) => [String(s.id), s]));
+    stationsListRef.current = airData;
     mapInstance.getSource('stations-cl').setData(points);
     mapInstance.getSource('stations-flat').setData(points);
+    updateViewRef.current?.();
   }, [airData, mapInstance]);
+
+  // Miasta z własną podstroną: nazwa w szczegółach stacji staje się linkiem
+  const citySlugs = useMemo(() => cityPageSlugs(airData), [airData]);
 
   useEffect(() => {
     // Lokalizacja tylko, gdy zgoda została już wcześniej udzielona (bez pytania przy starcie).
@@ -453,7 +489,7 @@ export default function SmogMap({ posts }) {
 
             <div className={styles.location}>
               <p><strong>📍 Lokalizacja:</strong></p>
-              <p>{selectedStation.city}</p>
+              <p><CityLink name={selectedStation.city} slugs={citySlugs} className={styles.cityLink} /></p>
               {selectedStation.street && <p>{selectedStation.street}</p>}
             </div>
             <StationArticles level={selectedStation.aqi.level} posts={posts} />

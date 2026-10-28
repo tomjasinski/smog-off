@@ -6,8 +6,12 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Delaunay } from 'd3-delaunay';
 import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
+import MapLegend from './MapLegend';
+import ShareStationButton from './ShareStationButton';
 import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
+
+const POLAND_BOUNDS = [[48.5, 13.5], [55.4, 24.8]];
 
 function MapInstructions() {
   const [showTip, setShowTip] = useState(true);
@@ -78,7 +82,21 @@ function LocationButton() {
       title="Znajdź moją lokalizację"
       aria-label="Znajdź moją lokalizację"
     >
-      <span aria-hidden="true">{locating ? '🔄' : locationFound ? '📍' : '🎯'}</span>
+      <svg
+        className={locating ? styles.locatingIcon : undefined}
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="7" />
+        <circle cx="12" cy="12" r="2.5" fill={locationFound ? 'currentColor' : 'none'} />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+      </svg>
     </button>
   );
 }
@@ -438,8 +456,6 @@ export default function Map({ posts }) {
     setVisibleCount(count);
   };
 
-  const showStatsButton = visibleCount > 20;
-
   useEffect(() => {
     // Lokalizacja tylko, gdy zgoda została już wcześniej udzielona (bez pytania przy starcie).
     // W pozostałych przypadkach użytkownik używa przycisku lokalizacji.
@@ -503,6 +519,10 @@ export default function Map({ posts }) {
         zoomControl={true}
         scrollWheelZoom={true}
         preferCanvas={true}
+        minZoom={6}
+        maxZoom={19}
+        maxBounds={POLAND_BOUNDS}
+        maxBoundsViscosity={0.8}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -513,20 +533,6 @@ export default function Map({ posts }) {
 
         {!loading && <MapInstructions />}
         <LocationButton />
-        
-        {/* Przycisk statystyk WEWNĄTRZ MapContainer */}
-        {showStatsButton && (
-          <div className={styles.statsButtonWrapper}>
-            <Link
-              href="/stats"
-              className={styles.statsButton}
-              title="Pokaż statystyki"
-              aria-label="Pokaż statystyki"
-            >
-              <span aria-hidden="true">📊</span>
-            </Link>
-          </div>
-        )}
         
         <VisibleMarkersTracker
           stations={airData}
@@ -618,6 +624,8 @@ export default function Map({ posts }) {
         </div>
       )}
 
+      <MapLegend />
+
       <BlogFloatingCards posts={posts} />
 
       {selectedStation && (
@@ -693,6 +701,8 @@ export default function Map({ posts }) {
                 <span className={styles.value}>{selectedStation.data.pressure.toFixed(0)} hPa</span>
               </div>
             </div>
+
+            <ShareStationButton station={selectedStation} />
 
             <div className={styles.location}>
               <p><strong>📍 Lokalizacja:</strong></p>

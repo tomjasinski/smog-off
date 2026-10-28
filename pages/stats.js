@@ -2,7 +2,7 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVELS, AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
 import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import styles from '../styles/StatsPage.module.css';
 
@@ -230,27 +230,28 @@ export default function StatsPage() {
           )}
 
           <div className={styles.aqiLevelsSection}>
-            <h2>Progi PM2.5 (µg/m³)</h2>
-            <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm25.map((level, idx) => (
-                <div key={level.level} className={styles.levelRow}>
-                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                  <span className={styles.levelLabel}>{level.label}</span>
-                  <span className={styles.levelRange}>{describeRange('pm25', idx)}</span>
-                </div>
-              ))}
-            </div>
-
-            <h2 style={{ marginTop: '2rem' }}>Progi PM10 (µg/m³)</h2>
-            <div className={styles.levelsTable}>
-              {AQI_LEVELS.pm10.map((level, idx) => (
-                <div key={level.level} className={styles.levelRow}>
-                  <span className={styles.levelDot} style={{ backgroundColor: level.color }}></span>
-                  <span className={styles.levelLabel}>{level.label}</span>
-                  <span className={styles.levelRange}>{describeRange('pm10', idx)}</span>
-                </div>
-              ))}
-            </div>
+            <h2>Progi jakości powietrza (µg/m³)</h2>
+            <table className={styles.levelsTable}>
+              <thead>
+                <tr>
+                  <th scope="col">Poziom</th>
+                  <th scope="col">PM2.5</th>
+                  <th scope="col">PM10</th>
+                </tr>
+              </thead>
+              <tbody>
+                {AQI_LEVEL_LIST.map(({ level, color, label }, idx) => (
+                  <tr key={level}>
+                    <th scope="row">
+                      <span className={styles.levelDot} style={{ backgroundColor: color }} aria-hidden="true"></span>
+                      {label}
+                    </th>
+                    <td>{describeRange('pm25', idx)}</td>
+                    <td>{describeRange('pm10', idx)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
 
             <p className={styles.rankingNote} style={{ marginTop: '1rem' }}>
               Progi pochodzą z{' '}

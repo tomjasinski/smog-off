@@ -96,6 +96,35 @@
   color: #1f2937;
 }
 
+.mapError {
+  position: absolute;
+  inset: 0;
+  z-index: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: #0b0e13;
+  color: #e5e7eb;
+  text-align: center;
+}
+
+.mapError a {
+  color: #93c5fd;
+  font-weight: 600;
+}
+
+.userDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.4);
+}
+
 .locatingIcon {
   animation: locating-pulse 1s ease-in-out infinite;
 }

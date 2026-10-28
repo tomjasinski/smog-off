@@ -50,6 +50,11 @@ export default function MapLegend() {
           </tbody>
         </table>
       )}
+      {open && (
+        <p className={styles.note}>
+          Rozmyte pole wokół stacji to orientacyjny zasięg oddziaływania (ok. 1,5 km). Z dala od stacji dane są mniej pewne.
+        </p>
+      )}
     </div>
   );
 }

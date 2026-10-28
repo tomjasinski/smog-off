@@ -81,7 +81,21 @@ function LocationButton() {
       title="Znajdź moją lokalizację"
       aria-label="Znajdź moją lokalizację"
     >
-      <span aria-hidden="true">{locating ? '🔄' : locationFound ? '📍' : '🎯'}</span>
+      <svg
+        className={locating ? styles.locatingIcon : undefined}
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        aria-hidden="true"
+      >
+        <circle cx="12" cy="12" r="7" />
+        <circle cx="12" cy="12" r="2.5" fill={locationFound ? 'currentColor' : 'none'} />
+        <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+      </svg>
     </button>
   );
 }
@@ -441,8 +455,6 @@ export default function Map({ posts }) {
     setVisibleCount(count);
   };
 
-  const showStatsButton = visibleCount > 20;
-
   useEffect(() => {
     // Lokalizacja tylko, gdy zgoda została już wcześniej udzielona (bez pytania przy starcie).
     // W pozostałych przypadkach użytkownik używa przycisku lokalizacji.
@@ -520,20 +532,6 @@ export default function Map({ posts }) {
 
         {!loading && <MapInstructions />}
         <LocationButton />
-        
-        {/* Przycisk statystyk WEWNĄTRZ MapContainer */}
-        {showStatsButton && (
-          <div className={styles.statsButtonWrapper}>
-            <Link
-              href="/stats"
-              className={styles.statsButton}
-              title="Pokaż statystyki"
-              aria-label="Pokaż statystyki"
-            >
-              <span aria-hidden="true">📊</span>
-            </Link>
-          </div>
-        )}
         
         <VisibleMarkersTracker
           stations={airData}

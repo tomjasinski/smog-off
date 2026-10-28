@@ -3,23 +3,23 @@
   margin: 0 auto;
   padding: 2rem 1rem;
   min-height: 100vh;
-  background: #fafbfc;
+  background: var(--page);
 }
 
 .backLink {
   display: inline-block;
   margin-bottom: 2rem;
-  color: #3f51b5;
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
 }
 
 .backLink:hover {
-  color: #764ba2;
+  color: var(--accent-hover);
 }
 
 .article {
-  background: white;
+  background: var(--surface);
   padding: 2rem;
   border-radius: 16px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
@@ -27,13 +27,13 @@
 
 .article h1 {
   margin: 0 0 0.5rem;
-  color: #1f2937;
+  color: var(--text);
   font-size: 2rem;
 }
 
 .intro {
   margin: 0 0 1.5rem;
-  color: #4b5563;
+  color: var(--text-3);
 }
 
 .controls {
@@ -53,7 +53,7 @@
 .field label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-2);
 }
 
 .field input,
@@ -63,13 +63,13 @@
   font-size: 1rem;
   border: 1.5px solid #6b7280;
   border-radius: 8px;
-  background: #fff;
-  color: #111827;
+  background: var(--surface);
+  color: var(--text);
 }
 
 .count {
   margin: 0 0 0.75rem;
-  color: #4b5563;
+  color: var(--text-3);
   font-size: 0.9rem;
 }
 
@@ -87,15 +87,15 @@
 .table td {
   padding: 0.6rem 0.5rem;
   text-align: left;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   vertical-align: top;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .table thead th {
   position: sticky;
   top: 0;
-  background: #f3f4f6;
+  background: var(--surface-3);
   font-weight: 700;
 }
 
@@ -112,7 +112,7 @@
   display: block;
   font-weight: 400;
   font-size: 0.8rem;
-  color: #4b5563;
+  color: var(--text-3);
 }
 
 .num {
@@ -136,18 +136,18 @@
   display: block;
   margin: 1.25rem auto 0;
   padding: 0.7rem 1.5rem;
-  border: 2px solid #3f51b5;
+  border: 2px solid var(--accent);
   border-radius: 999px;
-  background: #fff;
-  color: #3f51b5;
+  background: var(--surface);
+  color: var(--accent);
   font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
 }
 
 .moreButton:hover {
-  background: #3f51b5;
-  color: #fff;
+  background: var(--accent);
+  color: var(--page);
 }
 
 @media (max-width: 768px) {
@@ -170,7 +170,7 @@
 
 /* Miejscowość z własną podstroną: wyraźnie wygląda jak link */
 .cityLink {
-  color: #1d4ed8;
+  color: var(--link);
   font-weight: 700;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -183,7 +183,7 @@
 }
 
 .cityLink:hover {
-  color: #1e3a8a;
+  color: var(--link-hover);
 }
 
 .levelRow {
@@ -196,7 +196,7 @@
   margin-top: 0.15rem;
   font-weight: 400;
   font-size: 0.85rem;
-  color: #4b5563;
+  color: var(--text-3);
 }
 
 @media (max-width: 768px) {

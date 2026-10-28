@@ -7,7 +7,9 @@ import ShareStationButton from './ShareStationButton';
 import StationArticles from './StationArticles';
 import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
-import { buildMapStyle, TILEJSON_URL } from '../lib/mapStyle';
+import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
+import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
+import ThemeToggle from './ThemeToggle';
 import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
@@ -207,6 +209,7 @@ export default function SmogMap({ posts }) {
   const [mapReady, setMapReady] = useState(false);
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
+  const [theme, setThemeState] = useState('dark');
 
   const containerRef = useRef(null);
   const glRef = useRef(null);
@@ -249,7 +252,7 @@ export default function SmogMap({ posts }) {
       try {
         map = new gl.Map({
           container: containerRef.current,
-          style: buildMapStyle(tilejson),
+          style: buildMapStyle(tilejson, getResolvedTheme()),
           center: hasView ? [viewLng, viewLat] : initialCenterRef.current,
           zoom: hasView && Number.isFinite(viewZoom) ? Math.min(Math.max(viewZoom, 6), 18) : 11,
           minZoom: 6,
@@ -324,6 +327,17 @@ export default function SmogMap({ posts }) {
       if (map) map.remove();
     };
   }, []);
+
+  // Motyw (systemowy lub wybrany przyciskiem): odczyt po zamontowaniu i nasłuch zmian
+  useEffect(() => {
+    setThemeState(getResolvedTheme());
+    return subscribeTheme(setThemeState);
+  }, []);
+
+  // Kolory mapy i warstw stacji zmieniamy bez przeładowania stylu
+  useEffect(() => {
+    if (mapInstance) applyMapTheme(mapInstance, theme);
+  }, [mapInstance, theme]);
 
   // Dane stacji trafiają do źródeł GeoJSON (klastrowanego i płaskiego, dla stref oddziaływania)
   useEffect(() => {
@@ -417,6 +431,7 @@ export default function SmogMap({ posts }) {
 
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
+      <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
 
       {loading && (
         <div className={styles.dataLoading} role="status">

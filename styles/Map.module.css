@@ -22,7 +22,7 @@
   /* Na wąskich ekranach dymek nie może zasłaniać przycisków ani punktów przy górnej krawędzi */
   .instructionTip {
     top: auto;
-    bottom: 70px;
+    bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
   .tipContent {
@@ -112,6 +112,35 @@
   font-weight: 600;
 }
 
+/* Przycisk motywu: ten sam styl co przycisk lokalizacji, tuż pod nim */
+.themeButton {
+  position: absolute;
+  top: 118px;
+  left: 10px;
+  z-index: 600;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  background: #fff;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.themeButton:hover {
+  background: #f2f2f2;
+}
+
+.themeButton:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .userDot {
   width: 16px;
   height: 16px;
@@ -157,7 +186,7 @@
 }
 
 .detailContent {
-  background: white;
+  background: var(--surface);
   border-radius: 20px;
   padding: 2rem;
   max-width: 550px;
@@ -180,16 +209,20 @@
   }
 }
 
+/* Przyklejony do górnego prawego rogu okna: widoczny także po przewinięciu szczegółów w dół */
 .closeBtn {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  background: #f3f4f6;
+  position: sticky;
+  top: 0;
+  float: right;
+  z-index: 3;
+  margin: -0.5rem -0.5rem 0.5rem 0.75rem;
+  box-shadow: 0 0 0 5px var(--surface);
+  background: var(--surface-3);
   border: none;
   border-radius: 50%;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--text-muted);
   line-height: 1;
   padding: 0;
   width: 36px;
@@ -198,14 +231,14 @@
 }
 
 .closeBtn:hover {
-  background: #e5e7eb;
-  color: #374151;
+  background: var(--border);
+  color: var(--text-2);
   transform: rotate(90deg);
 }
 
 .detailContent h2 {
   margin-bottom: 1rem;
-  color: #1f2937;
+  color: var(--text);
   padding-right: 3rem;
   font-size: 1.5rem;
 }
@@ -228,7 +261,7 @@
 }
 
 .dataItem {
-  background: #f9fafb;
+  background: var(--surface-2);
   padding: 1rem;
   border-radius: 10px;
   display: flex;
@@ -238,20 +271,20 @@
 }
 
 .dataItem:hover {
-  background: #f3f4f6;
+  background: var(--surface-3);
   transform: translateY(-2px);
 }
 
 .label {
   font-size: 0.85rem;
-  color: #6b7280;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .value {
   font-size: 1.35rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--text);
 }
 
 .pmLegend {
@@ -262,7 +295,7 @@
 }
 
 .pmLegend h4 {
-  color: #1e40af;
+  color: var(--link-hover);
   margin-bottom: 0.75rem;
   font-size: 0.95rem;
 }
@@ -302,7 +335,7 @@
   color: #9ca3af;
   font-size: 0.85rem;
   padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--border);
 }
 
 .loading {
@@ -311,7 +344,7 @@
   justify-content: center;
   height: 400px;
   font-size: 1.1rem;
-  color: #3f51b5;
+  color: var(--accent);
 }
 
 /* === RESPONSIVE === */
@@ -342,6 +375,17 @@
   color: #fff;
   font-size: 0.85rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Na wąskich ekranach legenda zajmuje górny prawy róg, więc komunikat ładowania stoi nad arkuszem z artykułami */
+@media (max-width: 767px) {
+  .dataLoading {
+    top: auto;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    width: max-content;
+    max-width: calc(100% - 24px);
+    text-align: center;
+  }
 }
 
 /* Adnotacja o źródłach mapy: ok. 25% mniejsza niż domyślna (12 px -> 9 px), tekst wyśrodkowany w białym polu */

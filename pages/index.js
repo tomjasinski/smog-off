@@ -5,7 +5,6 @@ import { getAllPosts } from '../lib/blogPosts';
 import BlogCard from '../components/BlogCard';
 import styles from '../styles/Home.module.css';
 import Footer from '../components/Footer';
-import { AQI_LEVEL_LIST } from '../lib/aqiLevels';
 
 const Map = dynamic(() => import('../components/Map'), { ssr: false });
 
@@ -27,14 +26,6 @@ export default function Home({ posts }) {
         <header className={styles.header}>
           <div className={styles.headerContent}>
             <h1>SmogOFF</h1>
-            <div className={styles.legend}>
-              {AQI_LEVEL_LIST.map(({ level, color, label }) => (
-                <span key={level} className={styles.legendItem}>
-                  <span className={styles.dot} style={{backgroundColor: color}}></span>
-                  {label}
-                </span>
-              ))}
-            </div>
           </div>
         </header>
 

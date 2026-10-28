@@ -6,6 +6,7 @@ import { useEffect, useState, useMemo, useRef } from 'react';
 import { Delaunay } from 'd3-delaunay';
 import Link from 'next/link';
 import StatsOverlay from './StatsOverlay';
+import MapLegend from './MapLegend';
 import { getPMColor, getReadableTextColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
@@ -623,6 +624,8 @@ export default function Map({ posts }) {
           Ładowanie danych o jakości powietrza…
         </div>
       )}
+
+      <MapLegend />
 
       <BlogFloatingCards posts={posts} />
 

@@ -18,7 +18,7 @@ export default function MyApp({ Component, pageProps }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="SmogOFF" />
         <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="theme-color" content="#667eea" />
+        <meta name="theme-color" content="#1f2937" />
         
         <link rel="manifest" href="/manifest.json" />
         <link rel="apple-touch-icon" href="/icon-192x192.png" />

@@ -1,0 +1,112 @@
+.legend {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 800;
+  width: 170px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  color: #111827;
+  font-size: 0.75rem;
+}
+
+.open {
+  width: min(280px, calc(100vw - 20px));
+}
+
+.toggle {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 10px;
+}
+
+.toggle:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.title {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+}
+
+.bar {
+  display: flex;
+  height: 10px;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar span {
+  flex: 1;
+}
+
+.ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  color: #4b5563;
+  font-size: 0.65rem;
+}
+
+.details {
+  width: 100%;
+  border-collapse: collapse;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.7rem;
+}
+
+.details caption {
+  padding: 0.4rem 0.6rem 0.2rem;
+  color: #4b5563;
+  text-align: left;
+}
+
+.details th,
+.details td {
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.details thead th {
+  font-weight: 600;
+}
+
+.details tbody th {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.swatch {
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+@media (min-width: 640px) {
+  .legend {
+    width: 220px;
+    font-size: 0.8rem;
+  }
+
+  .open {
+    width: 300px;
+  }
+
+  .details {
+    font-size: 0.75rem;
+  }
+}

@@ -287,19 +287,22 @@
 }
 
 .location {
-  background: #fef3c7;
-  padding: 1rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
   border-radius: 10px;
-  margin-bottom: 1rem;
-}
-
-.location p {
-  margin: 0.25rem 0;
-  color: #92400e;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }
 
 .location strong {
-  color: #78350f;
+  color: var(--text);
 }
 
 .timestamp {

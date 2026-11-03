@@ -2,7 +2,7 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVEL_LIST, calculateAQI, describeRange, paletteColor } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, calculateAQI, describeRange, paletteColor, getPMLevelInfo } from '../lib/aqiLevels';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
@@ -214,19 +214,30 @@ export default function StatsPage() {
               <span className={styles.statValue}>{stats.total}</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>{t('Średnie PM2.5')}</span>
-              <span className={styles.statValue}>{stats.avgPM25} µg/m³</span>
-            </div>
-            <div className={styles.statCard}>
-              <span className={styles.statLabel}>{t('Średnie PM10')}</span>
-              <span className={styles.statValue}>{stats.avgPM10} µg/m³</span>
-            </div>
-            <div className={styles.statCard}>
               <span className={styles.statLabel}>{t('Temperatura')}</span>
               <span className={styles.statValue}>{stats.avgTemperature}°C</span>
             </div>
+            {[
+              { type: 'pm25', label: 'Średnie PM2.5', value: stats.avgPM25 },
+              { type: 'pm10', label: 'Średnie PM10', value: stats.avgPM10 }
+            ].map(({ type, label, value }) => {
+              // Kolor i etykieta poziomu według progów EAQI dla średniej (kafelek podpowiada stan powietrza)
+              const level = getPMLevelInfo(Number(value), type);
+              const color = level ? paletteColor(level.color) : null;
+              return (
+                <div
+                  key={type}
+                  className={`${styles.statCard} ${color ? styles.statCardLevel : ''}`}
+                  style={color ? { borderLeftColor: color, backgroundColor: `${color}26` } : undefined}
+                >
+                  <span className={styles.statLabel}>{t(label)}</span>
+                  <span className={styles.statValue}>{value} µg/m³</span>
+                  {level && <LevelBadge color={level.color} label={level.label} small />}
+                </div>
+              );
+            })}
           </div>
-          
+
           <div className={styles.aqiDistribution}>
             <h2>{t('Jakość powietrza w Polsce')}</h2>
             <div className={styles.aqiBar} role="img" aria-label={t('Rozkład stacji według jakości powietrza')}>

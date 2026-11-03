@@ -36,6 +36,18 @@ test.describe('mapa i ustawienia', () => {
     expect(tops).toHaveLength(3);
     expect(new Set(tops).size).toBe(1);
 
+    // Lokalizacja (ulica, miasto w jednej linii) jest pod nazwą stacji i nad plakietką jakości powietrza
+    const location = dialog.locator('[class*="location"]').first();
+    await expect(location).toContainText('UL. TESTOWA 1, POZNAŃ');
+    const [heading, locationBox, badge] = await Promise.all([
+      dialog.locator('h2').boundingBox(),
+      location.boundingBox(),
+      dialog.locator('[class*="statusBadge"]').boundingBox()
+    ]);
+    expect(heading.y).toBeLessThan(locationBox.y);
+    expect(locationBox.y).toBeLessThan(badge.y);
+    expect(locationBox.height).toBeLessThan(80);
+
     // "W ulubionych" i "Udostępnij" są w jednej linii
     const row = await dialog
       .locator('[class*="dialogActions"] button')
@@ -101,6 +113,49 @@ test.describe('podgląd linków', () => {
   test('stare linki ze pełnym identyfikatorem stacji nadal działają', async ({ request }) => {
     const response = await request.get(`/stacja/${encodeURIComponent(POZNAN_1.id)}`);
     expect(response.status()).toBe(200);
+  });
+});
+
+test.describe('statystyki', () => {
+  test('cztery kafelki w układzie 2x2, średnie PM mają kolor poziomu', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/stats');
+    const cards = page.locator('[class*="statCard"]');
+    await expect(cards).toHaveCount(4);
+
+    const tops = await cards.evaluateAll((items) => items.map((item) => Math.round(item.getBoundingClientRect().top)));
+    expect(tops[0]).toBe(tops[1]);
+    expect(tops[2]).toBe(tops[3]);
+    expect(tops[2]).toBeGreaterThan(tops[0]);
+
+    // Pierwszy rząd: stacje i temperatura, drugi: średnie PM z poziomem jakości
+    await expect(cards.nth(0)).toContainText('Stacji pomiarowych');
+    await expect(cards.nth(1)).toContainText('Temperatura');
+    await expect(cards.nth(2)).toContainText('Średnie PM2.5');
+    await expect(cards.nth(3)).toContainText('Średnie PM10');
+    for (const index of [2, 3]) {
+      await expect(cards.nth(index)).toHaveCSS('border-left-style', 'solid');
+      const background = await cards.nth(index).evaluate((el) => getComputedStyle(el).backgroundColor);
+      expect(background).not.toBe('rgba(0, 0, 0, 0)');
+    }
+  });
+});
+
+test.describe('układ mapy na telefonie', () => {
+  test('legenda nie nachodzi na przypięty nagłówek po przewinięciu', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    const legend = page.locator('[class*="legend"]').first();
+    await expect(legend).toBeVisible();
+
+    await page.evaluate(() => window.scrollTo(0, 40));
+    const topmost = await legend.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      // Punkt tuż pod górną krawędzią legendy, czyli tam, gdzie nachodzi ona na nagłówek
+      const hit = document.elementFromPoint(box.left + box.width / 2, box.top + 8);
+      return hit ? hit.closest('header') !== null : false;
+    });
+    expect(topmost).toBe(true);
   });
 });
 

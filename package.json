@@ -9,7 +9,8 @@
     "postinstall": "node scripts/copy-maplibre-worker.mjs",
     "predev": "node scripts/copy-maplibre-worker.mjs",
     "prebuild": "node scripts/copy-maplibre-worker.mjs",
-    "build:local": "node scripts/build-local.mjs"
+    "build:local": "node scripts/build-local.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "axios": "^1.12.2",
@@ -24,6 +25,7 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.1",
     "vitest": "^5.0.5"
   }
 }

@@ -45,3 +45,10 @@ describe('translate', () => {
     expect(translate('pl', 'a {x} b', {})).toBe('a {x} b');
   });
 });
+
+describe('teksty wybierane dynamicznie z list', () => {
+  it('opcje sortowania mają tłumaczenie', async () => {
+    const { QUALITY_SORT_OPTIONS } = await import('../lib/sorting');
+    for (const { label } of QUALITY_SORT_OPTIONS) expect(en[label], label).toBeTruthy();
+  });
+});

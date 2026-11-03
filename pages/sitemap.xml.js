@@ -4,7 +4,7 @@ import { groupCities } from '../lib/cities';
 import { SITE_URL } from '../lib/site';
 import { LOCALES, localePrefix } from '../lib/i18n';
 
-const STATIC_PATHS = ['/', '/stats', '/stacje', '/miasta'];
+const STATIC_PATHS = ['/', '/stats', '/stacje', '/miasta', '/o-danych'];
 
 const escapeXml = (value) =>
   value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

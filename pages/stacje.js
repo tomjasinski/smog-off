@@ -5,6 +5,7 @@ import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
 import { paletteColor } from '../lib/aqiLevels';
+import { hashId } from '../lib/stationKey';
 import styles from '../styles/StationsPage.module.css';
 import { useT } from '../lib/i18n';
 
@@ -128,7 +129,7 @@ export default function StationsPage() {
                       {shown.map(s => (
                         <tr key={s.id}>
                           <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${paletteColor(s.aqi.color)}` }}>
-                            <Link href={{ pathname: '/', query: { station: s.id } }} className={styles.mapLink}>
+                            <Link href={{ pathname: '/', query: { station: hashId(s.id) } }} className={styles.mapLink}>
                               {s.name}
                             </Link>
                             {s.street && <span className={styles.street}>{s.street}</span>}

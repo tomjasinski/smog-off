@@ -1,11 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach } from 'vitest';
 import {
   AQI_LEVELS,
   AQI_LEVEL_LIST,
   calculateAQI,
   describeRange,
   getPMColor,
-  getReadableTextColor
+  getReadableTextColor,
+  paletteColor,
+  setActivePalette
 } from '../lib/aqiLevels';
 
 describe('progi EAQI', () => {
@@ -77,5 +79,30 @@ describe('pomocnicze', () => {
       const [a, b] = [lum(color), lum(text)].sort((x, y) => y - x);
       expect((a + 0.05) / (b + 0.05)).toBeGreaterThanOrEqual(4.5);
     }
+  });
+});
+
+describe('paleta dla daltonistów', () => {
+  afterEach(() => setActivePalette('default'));
+
+  it('nie zmienia kolorów w palecie domyślnej', () => {
+    for (const { color } of AQI_LEVEL_LIST) expect(paletteColor(color)).toBe(color);
+  });
+
+  it('zamienia kolory poziomów na niezieloną i nieczerwoną skalę, a obce zostawia', () => {
+    setActivePalette('cvd');
+    const mapped = AQI_LEVEL_LIST.map(({ color }) => paletteColor(color));
+    expect(new Set(mapped).size).toBe(AQI_LEVEL_LIST.length);
+    expect(mapped).not.toContain(AQI_LEVEL_LIST[0].color);
+    expect(paletteColor('#9ca3af')).toBe('#9ca3af');
+  });
+
+  it('dobiera czytelny tekst do koloru z aktywnej palety', () => {
+    setActivePalette('cvd');
+    const good = AQI_LEVEL_LIST[0].color; // niebieski: biały tekst
+    const moderate = AQI_LEVEL_LIST[2].color; // żółty: ciemny tekst
+    expect(getReadableTextColor(good)).toBe('#ffffff');
+    expect(getReadableTextColor(moderate)).toBe('#111827');
+    expect(getPMColor(3, 'pm25')).toBe(paletteColor(good));
   });
 });

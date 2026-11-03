@@ -1,8 +1,24 @@
 import '../styles/globals.css'
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import { PaletteContext, loadPalette, savePalette } from '../lib/palette'
+import { setActivePalette } from '../lib/aqiLevels'
 
 export default function MyApp({ Component, pageProps }) {
+  // Paleta kolorów (daltonizm): pierwszy render jak na serwerze, zapamiętany wybór wczytujemy po zamontowaniu.
+  // Stan jest tutaj, żeby zmiana odświeżyła całą stronę, także komponenty bez kontekstu.
+  const [palette, setPaletteState] = useState('default');
+  setActivePalette(palette);
+
+  useEffect(() => {
+    setPaletteState(loadPalette());
+  }, []);
+
+  const setPalette = (next) => {
+    setPaletteState(next);
+    savePalette(next);
+  };
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -24,7 +40,9 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
       </Head>
-      <Component {...pageProps} />
+      <PaletteContext.Provider value={{ palette, setPalette }}>
+        <Component {...pageProps} />
+      </PaletteContext.Provider>
     </>
   )
 }

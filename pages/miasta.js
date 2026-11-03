@@ -2,6 +2,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Footer from '../components/Footer';
 import LevelBadge from '../components/LevelBadge';
+import { paletteColor } from '../lib/aqiLevels';
 import { getFreshStations } from '../lib/airQualityServer';
 import { groupCities, MIN_STATIONS_FOR_CITY_PAGE } from '../lib/cities';
 import { SITE_URL } from '../lib/site';
@@ -59,12 +60,12 @@ export default function CitiesPage({ cities }) {
               <tbody>
                 {cities.map((c) => (
                   <tr key={c.slug}>
-                    <th scope="row" style={{ borderLeft: `6px solid ${c.color}` }}>
+                    <th scope="row" style={{ borderLeft: `6px solid ${paletteColor(c.color)}` }}>
                       <Link href={`/miasto/${c.slug}`} className={styles.cityLink}>{c.name}</Link>
                       <span className={styles.levelRow}><LevelBadge color={c.color} label={c.label} /></span>
                     </th>
-                    <td className={styles.value} style={{ backgroundColor: `${c.color}40` }}>{c.pm25}</td>
-                    <td className={styles.value} style={{ backgroundColor: `${c.color}40` }}>{c.pm10}</td>
+                    <td className={styles.value} style={{ backgroundColor: `${paletteColor(c.color)}40` }}>{c.pm25}</td>
+                    <td className={styles.value} style={{ backgroundColor: `${paletteColor(c.color)}40` }}>{c.pm10}</td>
                     <td>{c.count}</td>
                   </tr>
                 ))}

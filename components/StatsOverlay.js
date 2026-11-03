@@ -1,5 +1,5 @@
 import { getReadableTextColor } from '../lib/aqiLevels';
-import { AQI_LEVELS, AQI_LEVEL_LIST, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVELS, AQI_LEVEL_LIST, describeRange, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/StatsOverlay.module.css';
 
 export default function StatsOverlay({ stats, visible, onClose }) {
@@ -42,7 +42,7 @@ export default function StatsOverlay({ stats, visible, onClose }) {
                   className={styles.aqiSegment}
                   style={{
                     width: `${(count / stats.total * 100)}%`,
-                    backgroundColor: color,
+                    backgroundColor: paletteColor(color),
                     color: getReadableTextColor(color)
                   }}
                   title={`${label}: ${count}`}
@@ -59,7 +59,7 @@ export default function StatsOverlay({ stats, visible, onClose }) {
           <div className={styles.legendList}>
             {AQI_LEVELS.pm25.map((level, idx) => (
               <div key={level.level} className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ backgroundColor: level.color }}></span>
+                <span className={styles.legendDot} style={{ backgroundColor: paletteColor(level.color) }}></span>
                 <span className={styles.legendLabel}>{level.label}</span>
                 <span className={styles.legendRange}>{describeRange('pm25', idx)}</span>
               </div>
@@ -70,7 +70,7 @@ export default function StatsOverlay({ stats, visible, onClose }) {
           <div className={styles.legendList}>
             {AQI_LEVELS.pm10.map((level, idx) => (
               <div key={level.level} className={styles.legendItem}>
-                <span className={styles.legendDot} style={{ backgroundColor: level.color }}></span>
+                <span className={styles.legendDot} style={{ backgroundColor: paletteColor(level.color) }}></span>
                 <span className={styles.legendLabel}>{level.label}</span>
                 <span className={styles.legendRange}>{describeRange('pm10', idx)}</span>
               </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { AQI_LEVEL_LIST, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, describeRange, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/MapLegend.module.css';
 
 export default function MapLegend() {
@@ -17,7 +17,7 @@ export default function MapLegend() {
         <span className={styles.title}>Jakość powietrza</span>
         <span className={styles.bar} aria-hidden="true">
           {AQI_LEVEL_LIST.map(({ level, color }) => (
-            <span key={level} style={{ backgroundColor: color }} />
+            <span key={level} style={{ backgroundColor: paletteColor(color) }} />
           ))}
         </span>
         <span className={styles.ends} aria-hidden="true">
@@ -40,7 +40,7 @@ export default function MapLegend() {
             {AQI_LEVEL_LIST.map(({ level, color, label }, i) => (
               <tr key={level}>
                 <th scope="row">
-                  <span className={styles.swatch} style={{ backgroundColor: color }} aria-hidden="true" />
+                  <span className={styles.swatch} style={{ backgroundColor: paletteColor(color) }} aria-hidden="true" />
                   {label}
                 </th>
                 <td>{describeRange('pm25', i)}</td>

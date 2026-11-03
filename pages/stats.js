@@ -2,7 +2,7 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, calculateAQI, describeRange, paletteColor } from '../lib/aqiLevels';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
@@ -101,8 +101,8 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(c => (
-          <li key={c.city} className={styles.rankingItem} style={{ borderLeftColor: c.aqi.color }}>
-            <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
+          <li key={c.city} className={styles.rankingItem} style={{ borderLeftColor: paletteColor(c.aqi.color) }}>
+            <span className={styles.rankingDot} style={{ backgroundColor: paletteColor(c.aqi.color) }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>
                 <CityLink name={c.city} slugs={citySlugs} className={styles.rankingLink} />
@@ -126,8 +126,8 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(s => (
-          <li key={s.id} className={styles.rankingItem} style={{ borderLeftColor: s.aqi.color }}>
-            <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
+          <li key={s.id} className={styles.rankingItem} style={{ borderLeftColor: paletteColor(s.aqi.color) }}>
+            <span className={styles.rankingDot} style={{ backgroundColor: paletteColor(s.aqi.color) }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>{s.name}</strong>
               {s.city && (
@@ -234,7 +234,7 @@ export default function StatsPage() {
                     className={styles.aqiSegment}
                     style={{
                       width: `${(count / stats.total * 100)}%`,
-                      backgroundColor: color,
+                      backgroundColor: paletteColor(color),
                       color: getReadableTextColor(color)
                     }}
                     title={`${label}: ${count}`}
@@ -250,7 +250,7 @@ export default function StatsPage() {
                 const count = stats.levels[level] || 0;
                 return (
                   <div key={level} className={styles.legendRow}>
-                    <span className={styles.legendDot} style={{backgroundColor: color}}></span>
+                    <span className={styles.legendDot} style={{backgroundColor: paletteColor(color)}}></span>
                     <span className={styles.legendLabel}>{label}</span>
                     <span className={styles.legendValue}>{count} <span className={styles.legendShare}>({((count / stats.total) * 100).toFixed(1)}%)</span></span>
                   </div>
@@ -308,7 +308,7 @@ export default function StatsPage() {
                 {AQI_LEVEL_LIST.map(({ level, color, label }, idx) => (
                   <tr key={level}>
                     <th scope="row">
-                      <span className={styles.levelDot} style={{ backgroundColor: color }} aria-hidden="true"></span>
+                      <span className={styles.levelDot} style={{ backgroundColor: paletteColor(color) }} aria-hidden="true"></span>
                       {label}
                     </th>
                     <td>{describeRange('pm25', idx)}</td>

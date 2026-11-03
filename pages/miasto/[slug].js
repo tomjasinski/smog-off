@@ -9,7 +9,7 @@ import { getFreshStations } from '../../lib/airQualityServer';
 import { getAllPosts } from '../../lib/blogPosts';
 import { groupCities } from '../../lib/cities';
 import { SITE_URL } from '../../lib/site';
-import { getReadableTextColor } from '../../lib/aqiLevels';
+import { getReadableTextColor, paletteColor } from '../../lib/aqiLevels';
 import pageStyles from '../../styles/StatsPage.module.css';
 import styles from '../../styles/CityPage.module.css';
 
@@ -120,7 +120,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
 
           <p className={styles.lead}>
             Aktualny poziom:{' '}
-            <span className={styles.badge} style={{ backgroundColor: city.color, color: getReadableTextColor(city.color) }}>
+            <span className={styles.badge} style={{ backgroundColor: paletteColor(city.color), color: getReadableTextColor(city.color) }}>
               {city.label}
             </span>
             . Wartości to mediana odczytów (µg/m³) na podstawie {city.count} stacji w mieście, więc pojedynczy błędny czujnik nie zniekształca wyniku.
@@ -155,7 +155,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
                 <tbody>
                   {city.stations.map((s) => (
                     <tr key={s.id}>
-                      <th scope="row" style={{ borderLeft: `6px solid ${s.color}` }}>
+                      <th scope="row" style={{ borderLeft: `6px solid ${paletteColor(s.color)}` }}>
                         <span className={styles.stationName}>{s.name}</span>
                         {s.street && <span className={styles.street}>{s.street}</span>}
                         <span className={styles.levelRow}>
@@ -163,8 +163,8 @@ export default function CityPage({ city, others, posts, generatedAt }) {
                           <span className={styles.time}>pomiar {timeOf(s.timestamp)}</span>
                         </span>
                       </th>
-                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm25}</td>
-                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm10}</td>
+                      <td className={styles.value} style={{ backgroundColor: `${paletteColor(s.color)}40` }}>{s.pm25}</td>
+                      <td className={styles.value} style={{ backgroundColor: `${paletteColor(s.color)}40` }}>{s.pm10}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -193,7 +193,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
                 {others.map((c) => (
                   <li key={c.slug}>
                     <Link href={`/miasto/${c.slug}`}>
-                      <span className={styles.dot} style={{ backgroundColor: c.color }} aria-hidden="true"></span>
+                      <span className={styles.dot} style={{ backgroundColor: paletteColor(c.color) }} aria-hidden="true"></span>
                       {c.name}
                     </Link>
                   </li>

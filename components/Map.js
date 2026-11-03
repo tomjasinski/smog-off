@@ -11,9 +11,11 @@ import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
 import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
 import ThemeToggle from './ThemeToggle';
 import FavoritesButton from './FavoritesButton';
+import PaletteToggle from './PaletteToggle';
+import { usePalette } from '../lib/palette';
 import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, MAX_FAVORITES } from '../lib/preferences';
 import { cityPageSlugs } from '../lib/cities';
-import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
+import { getReadableTextColor, getPMColor, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
 
 // [zachód, południe, wschód, północ]
@@ -86,7 +88,7 @@ function circlePolygon(lng, lat, radiusKm, steps = 32) {
 
 const stationFeature = (station) => ({
   type: 'Feature',
-  properties: { id: String(station.id), color: station.aqi.color, lat: station.latitude },
+  properties: { id: String(station.id), color: paletteColor(station.aqi.color), lat: station.latitude },
   geometry: { type: 'Point', coordinates: [station.longitude, station.latitude] }
 });
 
@@ -212,6 +214,7 @@ export default function SmogMap({ posts }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
   const [theme, setThemeState] = useState('dark');
+  const { palette } = usePalette();
   const [favorites, setFavorites] = useState([]);
   const [favoriteNote, setFavoriteNote] = useState('');
 
@@ -380,7 +383,7 @@ export default function SmogMap({ posts }) {
     mapInstance.getSource('stations-cl').setData(points);
     mapInstance.getSource('stations-flat').setData(points);
     updateViewRef.current?.();
-  }, [airData, mapInstance]);
+  }, [airData, mapInstance, palette]);
 
   // Ulubione stacje zapamiętane w przeglądarce
   useEffect(() => {
@@ -512,6 +515,7 @@ export default function SmogMap({ posts }) {
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
       <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+      <PaletteToggle variant="map" />
       <FavoritesButton favorites={favorites} stations={airData} onSelect={openFavorite} onRemove={removeFavorite} />
 
       {loading && (
@@ -547,7 +551,7 @@ export default function SmogMap({ posts }) {
             
             <div 
               className={styles.statusBadge} 
-              style={{ backgroundColor: selectedStation.aqi.color, color: getReadableTextColor(selectedStation.aqi.color) }}
+              style={{ backgroundColor: paletteColor(selectedStation.aqi.color), color: getReadableTextColor(selectedStation.aqi.color) }}
             >
               {selectedStation.aqi.label}
             </div>

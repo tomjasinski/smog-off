@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
+import { paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/StationsPage.module.css';
 
 const PAGE_SIZE = 50;
@@ -124,7 +125,7 @@ export default function StationsPage() {
                     <tbody>
                       {shown.map(s => (
                         <tr key={s.id}>
-                          <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${s.aqi.color}` }}>
+                          <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${paletteColor(s.aqi.color)}` }}>
                             <Link href={{ pathname: '/', query: { station: s.id } }} className={styles.mapLink}>
                               {s.name}
                             </Link>
@@ -133,8 +134,8 @@ export default function StationsPage() {
                             <span className={styles.levelRow}><LevelBadge color={s.aqi.color} label={s.aqi.label} /></span>
                           </th>
                           <td className={styles.cityCol}><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></td>
-                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm25}</td>
-                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm10}</td>
+                          <td className={styles.num} style={{ backgroundColor: `${paletteColor(s.aqi.color)}40` }}>{s.data.pm25}</td>
+                          <td className={styles.num} style={{ backgroundColor: `${paletteColor(s.aqi.color)}40` }}>{s.data.pm10}</td>
                         </tr>
                       ))}
                     </tbody>

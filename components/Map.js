@@ -1,5 +1,6 @@
 'use client';
 import { MapContainer, TileLayer, CircleMarker, Polygon, Popup, useMap, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import MarkerClusterGroup from 'react-leaflet-cluster';
 import 'leaflet/dist/leaflet.css';
 import { useEffect, useState, useMemo, useRef } from 'react';
@@ -31,6 +32,25 @@ function MapInstructions() {
       </div>
     </div>
   );
+}
+
+// Link z listy stacji: /?station=<id> pokazuje okolice stacji (5 km dookoła), bez otwierania szczegółów
+function FocusFromUrl({ stations }) {
+  const map = useMap();
+  const done = useRef(false);
+
+  useEffect(() => {
+    if (done.current || stations.length === 0) return;
+    done.current = true;
+
+    const stationId = new URLSearchParams(window.location.search).get('station');
+    const station = stationId && stations.find((s) => s.id === stationId);
+    if (!station) return;
+
+    map.fitBounds(L.circle([station.latitude, station.longitude], { radius: 5000 }).getBounds());
+  }, [stations, map]);
+
+  return null;
 }
 
 function LocationButton() {
@@ -507,6 +527,12 @@ export default function Map({ posts }) {
     }
   }
 
+  // Na ekranach dotykowych powiększamy obszar reakcji na tapnięcie punktu (sam znacznik się nie zmienia)
+  const canvasRenderer = useMemo(() => {
+    const touch = window.matchMedia('(pointer: coarse)').matches;
+    return L.canvas({ tolerance: touch ? 12 : 0 });
+  }, []);
+
   const showVoronoi = visibleCount >= 2 && visibleCount <= 25;
   const showClusters = !showVoronoi;
 
@@ -523,6 +549,7 @@ export default function Map({ posts }) {
         maxZoom={19}
         maxBounds={POLAND_BOUNDS}
         maxBoundsViscosity={0.8}
+        renderer={canvasRenderer}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
@@ -534,6 +561,8 @@ export default function Map({ posts }) {
         {!loading && <MapInstructions />}
         <LocationButton />
         
+        <FocusFromUrl stations={airData} />
+
         <VisibleMarkersTracker
           stations={airData}
           onVisibleChange={handleVisibleChange}

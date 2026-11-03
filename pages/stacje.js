@@ -120,7 +120,9 @@ export default function StationsPage() {
                       {shown.map(s => (
                         <tr key={s.id}>
                           <th scope="row" className={styles.stationName}>
-                            {s.name}
+                            <Link href={{ pathname: '/', query: { station: s.id } }} className={styles.mapLink}>
+                              {s.name}
+                            </Link>
                             {s.street && <span className={styles.street}>{s.street}</span>}
                           </th>
                           <td>{s.city}</td>

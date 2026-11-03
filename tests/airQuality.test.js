@@ -25,6 +25,15 @@ describe('mapStation', () => {
     expect(a.id).not.toBe(b.id);
   });
 
+  it('odrzuca śmieciowe wartości ulicy, ale zostawia prawdziwe', () => {
+    const street = (value) => mapStation(raw({ school: { ...raw().school, street: value } })).street;
+    for (const junk of ['0', ' 0 ', '-', '.', 'brak', 'NULL', null, undefined]) {
+      expect(street(junk)).toBe('');
+    }
+    expect(street(' UL. 3 MAJA ')).toBe('UL. 3 MAJA');
+    expect(street('DWORCOWA')).toBe('DWORCOWA');
+  });
+
   it('używa id szkoły, jeśli źródło je podaje', () => {
     expect(mapStation(raw({ school: { ...raw().school, id: 'abc' } })).id).toBe('abc');
   });

@@ -554,10 +554,29 @@
   }
 }
 
+/* Mobile: przyciski w rogach, w zasięgu kciuka.
+   Zoom (Leaflet) zostaje w lewym górnym rogu,
+   lokalizacja w prawym dolnym, nad paskiem artykułów. */
 @media (max-width: 768px) {
   .locationButton {
-    top: 75px;
-    left: 10px;
+    width: 48px;
+    height: 48px;
+    font-size: 1.5rem;
+  }
+
+  .locationButton {
+    top: auto;
+    left: auto;
+    right: 12px;
+    bottom: calc(clamp(60px, 10vh, 100px) + 16px);
+  }
+
+}
+
+@media (max-width: 639px) {
+  /* Dymek ponad przyciskiem lokalizacji, żeby się nie nakładały */
+  .instructionTip {
+    bottom: calc(clamp(60px, 10vh, 100px) + 76px);
   }
 }
 

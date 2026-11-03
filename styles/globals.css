@@ -4,9 +4,77 @@
   box-sizing: border-box;
 }
 
+/* Motyw: domyślnie według ustawienia systemu (prefers-color-scheme); data-theme na <html> to wybór użytkownika (przycisk na mapie) */
+:root {
+  color-scheme: light;
+  --page: #fafbfc;
+  --surface: #ffffff;
+  --surface-2: #f9fafb;
+  --surface-3: #f3f4f6;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text: #1f2937;
+  --text-2: #374151;
+  --text-3: #4b5563;
+  --text-muted: #6b7280;
+  --link: #1d4ed8;
+  --link-hover: #1e3a8a;
+  --accent: #3f51b5;
+  --accent-hover: #764ba2;
+  --focus: #1d4ed8;
+  --panel: rgba(255, 255, 255, 0.95);
+  --shadow: rgba(0, 0, 0, 0.06);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+  --page: #0b0e13;
+  --surface: #151b24;
+  --surface-2: #1c2430;
+  --surface-3: #232d3b;
+  --border: #2a3646;
+  --border-strong: #3a475a;
+  --text: #f3f4f6;
+  --text-2: #e5e7eb;
+  --text-3: #cbd5e1;
+  --text-muted: #9ca3af;
+  --link: #93c5fd;
+  --link-hover: #bfdbfe;
+  --accent: #a5b4fc;
+  --accent-hover: #c4b5fd;
+  --focus: #93c5fd;
+  --panel: rgba(21, 27, 36, 0.95);
+  --shadow: rgba(0, 0, 0, 0.4);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --page: #0b0e13;
+  --surface: #151b24;
+  --surface-2: #1c2430;
+  --surface-3: #232d3b;
+  --border: #2a3646;
+  --border-strong: #3a475a;
+  --text: #f3f4f6;
+  --text-2: #e5e7eb;
+  --text-3: #cbd5e1;
+  --text-muted: #9ca3af;
+  --link: #93c5fd;
+  --link-hover: #bfdbfe;
+  --accent: #a5b4fc;
+  --accent-hover: #c4b5fd;
+  --focus: #93c5fd;
+  --panel: rgba(21, 27, 36, 0.95);
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
+  background: var(--page);
+  color: var(--text);
 }
 
 /* Tekst widoczny tylko dla czytników ekranu */
@@ -29,8 +97,8 @@ body {
   left: 8px;
   z-index: 2000;
   padding: 0.5rem 1rem;
-  background: #fff;
-  color: #1f2937;
+  background: var(--surface);
+  color: var(--text);
   border-radius: 0 0 8px 8px;
   font-weight: 600;
 }
@@ -41,7 +109,7 @@ body {
 
 /* Wyraźny wskaźnik fokusu dla nawigacji klawiaturą */
 :focus-visible {
-  outline: 3px solid #1d4ed8;
+  outline: 3px solid var(--focus);
   outline-offset: 2px;
 }
 

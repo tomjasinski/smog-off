@@ -1,10 +1,10 @@
 .card {
   display: block;
-  background: white;
+  background: var(--surface);
   border-radius: 0;
   padding: 1.5rem;
   box-shadow: none;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--border);
   transition: all 0.3s ease;
   text-decoration: none;
   color: inherit;
@@ -12,26 +12,26 @@
 }
 
 .card:hover {
-  background: #f9fafb;
+  background: var(--surface-2);
   transform: translateX(8px);
 }
 
 .cardContent h3 {
-  color: #3f51b5;
+  color: var(--accent);
   margin-bottom: 0.5rem;
   font-size: 1rem;
   font-weight: 600;
 }
 
 .cardContent p {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 0.75rem;
 }
 
 .readMore {
-  color: #3f51b5;
+  color: var(--accent);
   font-weight: 600;
   font-size: 0.85rem;
 }
@@ -39,7 +39,7 @@
 @media (min-width: 640px) {
   .card {
     border-radius: 0;
-    border-right: 1px solid #e5e7eb;
+    border-right: 1px solid var(--border);
   }
   
   .cardContent h3 {

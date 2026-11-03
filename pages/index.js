@@ -14,13 +14,13 @@ export default function Home({ posts }) {
       <Head>
         <title>SmogOFF - mapa smogowa Polski</title>
         <meta name="description" content="Monitoruj jakość powietrza w Polsce w czasie rzeczywistym" />
-        <link rel="preconnect" href="https://a.tile.openstreetmap.org" crossOrigin="" />
-        <link rel="preconnect" href="https://b.tile.openstreetmap.org" crossOrigin="" />
-        <link rel="preconnect" href="https://c.tile.openstreetmap.org" crossOrigin="" />
+        <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="" />
       </Head>
 
-      <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>
-      <Link href="/stacje" className="skip-link" style={{ left: '220px' }}>Lista stacji (alternatywa dla mapy)</Link>
+      <nav aria-label="Skróty">
+        <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>
+        <Link href="/stacje" className="skip-link" style={{ left: '220px' }}>Lista stacji (alternatywa dla mapy)</Link>
+      </nav>
 
       <div className={styles.container}>
         <header className={styles.header}>

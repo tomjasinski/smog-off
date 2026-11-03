@@ -6,12 +6,14 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { getBlogPost, getAllPosts } from '../../lib/blogPosts';
 import styles from '../../styles/BlogPost.module.css';
+import { useT } from '../../lib/i18n';
 
 export default function BlogPost({ post, allPosts }) {
+  const { t, locale } = useT();
   const router = useRouter();
 
   if (router.isFallback || !post) {
-    return <div className={styles.loading}>Ładowanie...</div>;
+    return <div className={styles.loading}>{t('Ładowanie...')}</div>;
   }
 
   return (
@@ -19,14 +21,21 @@ export default function BlogPost({ post, allPosts }) {
       <Head>
         <title>{`${post.title} - SmogOFF`}</title>
         <meta name="description" content={post.excerpt} />
+        {locale !== 'pl' && <meta name="robots" content="noindex" />}
       </Head>
 
       <main className={styles.container}>
         <Link href="/" className={styles.backLink}>
-          ← Powrót do mapy
+          {t('← Powrót do mapy')}
         </Link>
 
-        <article className={styles.article}>
+        {locale !== 'pl' && (
+          <p className={styles.languageNote} role="note">
+            {t('Ten artykuł jest dostępny tylko po polsku.')}
+          </p>
+        )}
+
+        <article className={styles.article} lang="pl">
           <ReactMarkdown 
             remarkPlugins={[remarkGfm]}
             components={{
@@ -54,12 +63,12 @@ export default function BlogPost({ post, allPosts }) {
         </article>
 
         <aside className={styles.relatedPosts}>
-          <h3>Inne artykuły</h3>
+          <h3>{t('Inne artykuły')}</h3>
           {allPosts
             .filter(p => p.slug !== post.slug)
             .map(p => (
               <Link key={p.slug} href={`/blog/${p.slug}`} className={styles.relatedLink}>
-                {p.title}
+                <span lang="pl">{p.title}</span>
               </Link>
             ))}
         </aside>
@@ -68,11 +77,12 @@ export default function BlogPost({ post, allPosts }) {
   );
 }
 
-export async function getStaticPaths() {
+export async function getStaticPaths({ locales }) {
   const posts = getAllPosts();
-  const paths = posts.map(post => ({
-    params: { slug: post.slug }
-  }));
+  const paths = locales.flatMap(locale => posts.map(post => ({
+    params: { slug: post.slug },
+    locale
+  })));
 
   return { 
     paths, 

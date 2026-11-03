@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useSettings } from '../lib/settingsContext';
 import { groupCities } from '../lib/cities';
 import styles from '../styles/Settings.module.css';
+import { useT } from '../lib/i18n';
+import LanguageSwitch from './LanguageSwitch';
 
 function RadioGroup({ legend, name, value, options, onChange, hint }) {
   return (
@@ -34,6 +36,7 @@ const centroid = (stations) => ({
 
 // Okno ustawień. mapContext (tylko na mapie): { stations, favorites, getView, onClearData } odblokowuje wybór miejsca startu.
 export default function SettingsDialog({ onClose, mapContext }) {
+  const { t } = useT();
   const { settings, updateSettings, resetSettings } = useSettings();
   const dialogRef = useRef(null);
   const closeRef = useRef(null);
@@ -108,111 +111,116 @@ export default function SettingsDialog({ onClose, mapContext }) {
         aria-labelledby="settings-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <button type="button" ref={closeRef} className={styles.close} onClick={onClose} aria-label="Zamknij ustawienia">
+        <button type="button" ref={closeRef} className={styles.close} onClick={onClose} aria-label={t('Zamknij ustawienia')}>
           <span aria-hidden="true">×</span>
         </button>
-        <h2 id="settings-title">Ustawienia</h2>
-        <p className={styles.hint}>Zapisywane tylko w tej przeglądarce.</p>
+        <h2 id="settings-title">{t('Ustawienia')}</h2>
+        <p className={styles.hint}>{t('Zapisywane tylko w tej przeglądarce.')}</p>
+
+        <fieldset className={styles.group}>
+          <legend>{t('Język')}</legend>
+          <LanguageSwitch />
+        </fieldset>
 
         <RadioGroup
-          legend="Motyw"
+          legend={t('Motyw')}
           name="theme"
           value={settings.theme}
           onChange={set('theme')}
           options={[
-            { value: 'system', label: 'Jak w systemie' },
-            { value: 'light', label: 'Jasny' },
-            { value: 'dark', label: 'Ciemny' }
+            { value: 'system', label: t('Jak w systemie') },
+            { value: 'light', label: t('Jasny') },
+            { value: 'dark', label: t('Ciemny') }
           ]}
         />
 
         <RadioGroup
-          legend="Kolory poziomów jakości powietrza"
+          legend={t('Kolory poziomów jakości powietrza')}
           name="palette"
           value={settings.palette}
           onChange={set('palette')}
-          hint="Wersja dla daltonistów używa niebieskiego, żółtego i pomarańczowego zamiast zieleni i czerwieni."
+          hint={t('Wersja dla daltonistów używa niebieskiego, żółtego i pomarańczowego zamiast zieleni i czerwieni.')}
           options={[
-            { value: 'default', label: 'Standardowe (zieleń–czerwień)' },
-            { value: 'cvd', label: 'Dla daltonistów' }
+            { value: 'default', label: t('Standardowe (zieleń–czerwień)') },
+            { value: 'cvd', label: t('Dla daltonistów') }
           ]}
         />
 
         <RadioGroup
-          legend="Kontrast"
+          legend={t('Kontrast')}
           name="contrast"
           value={settings.contrast}
           onChange={set('contrast')}
           options={[
-            { value: 'normal', label: 'Standardowy' },
-            { value: 'high', label: 'Wysoki' }
+            { value: 'normal', label: t('Standardowy') },
+            { value: 'high', label: t('Wysoki') }
           ]}
         />
 
         <RadioGroup
-          legend="Rozmiar tekstu"
+          legend={t('Rozmiar tekstu')}
           name="textSize"
           value={settings.textSize}
           onChange={set('textSize')}
           options={[
-            { value: 'normal', label: 'Standardowy' },
-            { value: 'large', label: 'Większy' }
+            { value: 'normal', label: t('Standardowy') },
+            { value: 'large', label: t('Większy') }
           ]}
         />
 
         <RadioGroup
-          legend="Cele dotykowe (przyciski i punkty na mapie)"
+          legend={t('Cele dotykowe (przyciski i punkty na mapie)')}
           name="touch"
           value={settings.touch}
           onChange={set('touch')}
           options={[
-            { value: 'normal', label: 'Standardowe' },
-            { value: 'large', label: 'Duże' }
+            { value: 'normal', label: t('Standardowe') },
+            { value: 'large', label: t('Duże') }
           ]}
         />
 
         <RadioGroup
-          legend="Animacje"
+          legend={t('Animacje')}
           name="motion"
           value={settings.motion}
           onChange={set('motion')}
           options={[
-            { value: 'auto', label: 'Jak w systemie' },
-            { value: 'reduce', label: 'Ogranicz' }
+            { value: 'auto', label: t('Jak w systemie') },
+            { value: 'reduce', label: t('Ogranicz') }
           ]}
         />
 
         {mapContext && (
           <>
             <fieldset className={styles.group}>
-              <legend>Mapa</legend>
+              <legend>{t('Mapa')}</legend>
               <label className={styles.option}>
                 <input
                   type="checkbox"
                   checked={settings.zones}
                   onChange={(e) => updateSettings({ zones: e.target.checked })}
                 />
-                <span>Pokazuj zasięg oddziaływania stacji (rozmyte pola wokół punktów)</span>
+                <span>{t('Pokazuj zasięg oddziaływania stacji (rozmyte pola wokół punktów)')}</span>
               </label>
             </fieldset>
 
             <RadioGroup
-              legend="Gdzie otwiera się mapa"
+              legend={t('Gdzie otwiera się mapa')}
               name="start"
               value={start.mode}
               onChange={chooseStartMode}
               options={[
-                { value: 'last', label: 'Tam, gdzie ostatnio skończyłem' },
-                { value: 'default', label: 'Domyślnie (Poznań lub moja lokalizacja)' },
-                { value: 'city', label: 'W wybranym mieście', disabled: cities.length === 0 },
-                { value: 'station', label: 'Przy ulubionej stacji', disabled: favoriteStations.length === 0 },
-                { value: 'fixed', label: 'W widoku, który teraz widzę' }
+                { value: 'last', label: t('Tam, gdzie ostatnio skończyłem') },
+                { value: 'default', label: t('Domyślnie (Poznań lub moja lokalizacja)') },
+                { value: 'city', label: t('W wybranym mieście'), disabled: cities.length === 0 },
+                { value: 'station', label: t('Przy ulubionej stacji'), disabled: favoriteStations.length === 0 },
+                { value: 'fixed', label: t('W widoku, który teraz widzę') }
               ]}
             />
 
             {start.mode === 'city' && (
               <div className={styles.field}>
-                <label htmlFor="start-city">Miasto</label>
+                <label htmlFor="start-city">{t('Miasto')}</label>
                 <select
                   id="start-city"
                   value={start.label}
@@ -231,7 +239,7 @@ export default function SettingsDialog({ onClose, mapContext }) {
 
             {start.mode === 'station' && (
               <div className={styles.field}>
-                <label htmlFor="start-station">Stacja</label>
+                <label htmlFor="start-station">{t('Stacja')}</label>
                 <select
                   id="start-station"
                   value={start.id}
@@ -259,7 +267,7 @@ export default function SettingsDialog({ onClose, mapContext }) {
                   if (view) updateSettings({ start: { mode: 'fixed', ...view, label: 'wybrany widok' } });
                 }}
               >
-                Użyj bieżącego widoku mapy
+                {t('Użyj bieżącego widoku mapy')}
               </button>
             )}
           </>
@@ -267,11 +275,11 @@ export default function SettingsDialog({ onClose, mapContext }) {
 
         <div className={styles.footerActions}>
           <button type="button" className={styles.secondary} onClick={resetSettings}>
-            Przywróć ustawienia domyślne
+            {t('Przywróć ustawienia domyślne')}
           </button>
           {mapContext && (
             <button type="button" className={styles.secondary} onClick={mapContext.onClearData}>
-              Usuń ulubione i zapamiętany widok
+              {t('Usuń ulubione i zapamiętany widok')}
             </button>
           )}
         </div>

@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { slugify } from '../lib/shareImage';
 import styles from '../styles/ShareImageButton.module.css';
+import { useT } from '../lib/i18n';
 
 // render: () => Promise<Blob> (PNG). Podgląd w oknie, a pod nim pobranie i (gdy się da) udostępnienie pliku.
-export default function ShareImageButton({ label = 'Udostępnij jako grafikę', title, text, render }) {
+export default function ShareImageButton({ label, title, text, render }) {
+  const { t } = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [preview, setPreview] = useState(null);
@@ -23,7 +25,7 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
       setPreview({ url: URL.createObjectURL(blob), file });
     } catch (err) {
       console.error('Błąd tworzenia grafiki:', err);
-      setError('Nie udało się utworzyć grafiki.');
+      setError(t('Nie udało się utworzyć grafiki.'));
     } finally {
       setBusy(false);
     }
@@ -52,7 +54,7 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
       await navigator.share({ files: [preview.file], title, text });
     } catch (err) {
       // AbortError = użytkownik zamknął okno udostępniania
-      if (err?.name !== 'AbortError') setError('Nie udało się udostępnić grafiki.');
+      if (err?.name !== 'AbortError') setError(t('Nie udało się udostępnić grafiki.'));
     }
   };
 
@@ -65,7 +67,7 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
           <circle cx="18" cy="19" r="3" />
           <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
         </svg>
-        {busy ? 'Tworzę grafikę…' : label}
+        {busy ? t('Tworzę grafikę…') : label || t('Udostępnij jako grafikę')}
       </button>
       {error && <span className={styles.error} role="alert">{error}</span>}
 
@@ -78,19 +80,19 @@ export default function ShareImageButton({ label = 'Udostępnij jako grafikę', 
             aria-labelledby="share-image-title"
             onClick={(e) => e.stopPropagation()}
           >
-            <button type="button" className={styles.closeButton} onClick={close} ref={closeRef} aria-label="Zamknij podgląd">
+            <button type="button" className={styles.closeButton} onClick={close} ref={closeRef} aria-label={t('Zamknij podgląd')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
               </svg>
             </button>
             <h2 id="share-image-title">{title}</h2>
             <div className={styles.previewBox}>
-              <img src={preview.url} alt={`Podgląd grafiki: ${title}`} className={styles.preview} />
+              <img src={preview.url} alt={t('Podgląd grafiki: {title}', { title })} className={styles.preview} />
             </div>
             <div className={styles.actions}>
-              <a className={styles.primary} href={preview.url} download={fileName}>Pobierz PNG</a>
+              <a className={styles.primary} href={preview.url} download={fileName}>{t('Pobierz PNG')}</a>
               {canShare && (
-                <button type="button" className={styles.secondary} onClick={share}>Udostępnij</button>
+                <button type="button" className={styles.secondary} onClick={share}>{t('Udostępnij')}</button>
               )}
             </div>
           </div>

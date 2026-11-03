@@ -1,15 +1,17 @@
 import { useState } from 'react';
 import styles from '../styles/ShareStationButton.module.css';
+import { useT, localePrefix } from '../lib/i18n';
 
 export default function ShareStationButton({ station }) {
+  const { t, locale } = useT();
   const [status, setStatus] = useState('');
 
   const share = async () => {
     const { pm25, pm10 } = station.data;
     const payload = {
       title: `SmogOFF – ${station.name}`,
-      text: `${station.name}, ${station.city}: PM2.5 ${pm25.toFixed(1)} µg/m³, PM10 ${pm10.toFixed(1)} µg/m³ (${station.aqi.label})`,
-      url: `${window.location.origin}/stacja/${encodeURIComponent(station.id)}`
+      text: `${station.name}, ${station.city}: PM2.5 ${pm25.toFixed(1)} µg/m³, PM10 ${pm10.toFixed(1)} µg/m³ (${t(station.aqi.label)})`,
+      url: `${window.location.origin}${localePrefix(locale)}/stacja/${encodeURIComponent(station.id)}`
     };
 
     try {
@@ -18,12 +20,12 @@ export default function ShareStationButton({ station }) {
         return;
       }
       await navigator.clipboard.writeText(`${payload.text} ${payload.url}`);
-      setStatus('Skopiowano do schowka');
+      setStatus(t('Skopiowano do schowka'));
       setTimeout(() => setStatus(''), 2500);
     } catch (err) {
       // AbortError = użytkownik zamknął okno udostępniania
       if (err?.name !== 'AbortError') {
-        setStatus('Nie udało się udostępnić');
+        setStatus(t('Nie udało się udostępnić'));
         setTimeout(() => setStatus(''), 2500);
       }
     }
@@ -48,7 +50,7 @@ export default function ShareStationButton({ station }) {
           <circle cx="18" cy="19" r="3" />
           <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" />
         </svg>
-        Udostępnij
+        {t('Udostępnij')}
       </button>
       <span className={styles.status} role="status">{status}</span>
     </div>

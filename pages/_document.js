@@ -7,7 +7,7 @@ const THEME_SCRIPT = APPLY_SETTINGS_SCRIPT;
 
 export default function Document() {
   return (
-    <Html lang="pl">
+    <Html>
       <Head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </Head>

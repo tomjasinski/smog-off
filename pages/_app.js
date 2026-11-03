@@ -2,6 +2,7 @@ import '../styles/globals.css'
 import Head from 'next/head'
 import { useCallback, useEffect, useState } from 'react'
 import SettingsDialog from '../components/SettingsDialog'
+import LocaleMeta from '../components/LocaleMeta'
 import { SettingsContext } from '../lib/settingsContext'
 import { DEFAULT_SETTINGS, loadSettings, saveSettings, clearSettings, applySettings } from '../lib/settings'
 import { setActivePalette } from '../lib/aqiLevels'
@@ -58,6 +59,7 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
       </Head>
+      <LocaleMeta />
       <SettingsContext.Provider value={{ settings, updateSettings, resetSettings, openSettings }}>
         <Component {...pageProps} />
         {settingsOpen && <SettingsDialog onClose={closeSettings} />}

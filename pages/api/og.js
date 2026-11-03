@@ -3,6 +3,7 @@ import { getFreshStations } from '../../lib/airQualityServer';
 import { buildOgData } from '../../lib/og';
 import { AQI_LEVEL_LIST, getReadableTextColor } from '../../lib/aqiLevels';
 import { SITE_HOST } from '../../lib/site';
+import { translate } from '../../lib/i18n';
 
 // Obraz podglądu linku (Open Graph, 1200x630) z aktualnym poziomem jakości powietrza:
 // /api/og (cała Polska), /api/og?city=<slug>, /api/og?station=<id>.
@@ -12,7 +13,8 @@ const HEIGHT = 630;
 
 const first = (value) => (Array.isArray(value) ? value[0] : value);
 
-function Card({ data }) {
+function Card({ data, locale }) {
+  const t = (text) => translate(locale, text);
   const textColor = getReadableTextColor(data.aqi.color);
   const nameSize = data.title.length > 38 ? 54 : data.title.length > 24 ? 66 : 80;
 
@@ -37,7 +39,7 @@ function Card({ data }) {
 
       <div style={{ display: 'flex', flexDirection: 'column' }}>
         <div style={{ display: 'flex', fontSize: 30, fontWeight: 700, color: '#9ca3af' }}>
-          {data.kind === 'country' ? 'SmogOFF' : 'Jakość powietrza'}
+          {data.kind === 'country' ? 'SmogOFF' : t('Jakość powietrza')}
         </div>
         <div style={{ display: 'flex', fontSize: nameSize, fontWeight: 800, lineHeight: 1.1, marginTop: 12 }}>{data.title}</div>
         <div style={{ display: 'flex', fontSize: 32, color: '#9ca3af', marginTop: 10 }}>{data.subtitle}</div>
@@ -58,7 +60,7 @@ function Card({ data }) {
           {data.aqi.label}
         </div>
         <div style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', fontSize: 26, color: '#9ca3af' }}>PM2.5 · PM10 (µg/m³)</div>
+          <div style={{ display: 'flex', fontSize: 26, color: '#9ca3af' }}>{t('PM2.5 · PM10 (µg/m³)')}</div>
           <div style={{ display: 'flex', fontSize: 52, fontWeight: 800 }}>
             {data.pm25} · {data.pm10}
           </div>
@@ -73,13 +75,14 @@ function Card({ data }) {
 export default async function handler(req, res) {
   try {
     const { stations, stats } = await getFreshStations();
-    const data = buildOgData({ city: first(req.query.city), station: first(req.query.station) }, stations, stats);
+    const locale = first(req.query.lang) === 'en' ? 'en' : 'pl';
+    const data = buildOgData({ city: first(req.query.city), station: first(req.query.station) }, stations, stats, locale);
     if (!data) {
       res.status(404).end('Nie znaleziono');
       return;
     }
 
-    const image = new ImageResponse(<Card data={data} />, { width: WIDTH, height: HEIGHT });
+    const image = new ImageResponse(<Card data={data} locale={locale} />, { width: WIDTH, height: HEIGHT });
     const body = Buffer.from(await image.arrayBuffer());
     res.setHeader('Content-Type', 'image/png');
     res.setHeader('Cache-Control', 'public, max-age=300, s-maxage=600, stale-while-revalidate=3600');

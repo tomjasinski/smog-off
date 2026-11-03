@@ -1,13 +1,20 @@
 import Head from 'next/head';
+import { useRouter } from 'next/router';
 import { SITE_URL } from '../lib/site';
+import { localePrefix } from '../lib/i18n';
 
-// Znaczniki podglądu linku w komunikatorach (Open Graph i Twitter Card). image: ścieżka obrazu, np. /api/og?city=poznan
-export default function SocialMeta({ title, description, url, image }) {
-  const imageUrl = `${SITE_URL}${image}`;
+// Znaczniki podglądu linku w komunikatorach (Open Graph i Twitter Card).
+// path: ścieżka strony bez prefiksu języka, np. /miasto/poznan; image: ścieżka obrazu, np. /api/og?city=poznan
+export default function SocialMeta({ title, description, path, image }) {
+  const { locale = 'pl' } = useRouter();
+  const url = `${SITE_URL}${localePrefix(locale)}${path === '/' ? '' : path}`;
+  const imageUrl = `${SITE_URL}${image}${image.includes('?') ? '&' : '?'}lang=${locale}`;
+
   return (
     <Head>
       <meta property="og:type" content="website" />
       <meta property="og:site_name" content="SmogOFF" />
+      <meta property="og:locale" content={locale === 'en' ? 'en_GB' : 'pl_PL'} />
       <meta property="og:title" content={title} />
       <meta property="og:description" content={description} />
       <meta property="og:url" content={url} />

@@ -1,7 +1,9 @@
 import { Html, Head, Main, NextScript } from 'next/document';
+import { APPLY_SETTINGS_SCRIPT } from '../lib/settings';
 
-// Ustawia zapamiętany motyw zanim strona się wyrysuje (bez migotania). Bez wyboru działa motyw systemowy.
-const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t);}}catch(e){}})();`;
+// Ustawia zapamiętane ustawienia (motyw, kontrast, rozmiary) zanim strona się wyrysuje, bez migotania.
+// Bez wyboru działa motyw systemowy.
+const THEME_SCRIPT = APPLY_SETTINGS_SCRIPT;
 
 export default function Document() {
   return (

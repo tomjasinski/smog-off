@@ -123,3 +123,86 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* === USTAWIENIA DOSTĘPNOŚCI (okno Ustawienia; atrybuty na <html> ustawia lib/settings.js) === */
+
+/* Większy tekst: skaluje wszystkie wymiary w rem */
+:root[data-text='large'] {
+  font-size: 118%;
+}
+
+/* Wysoki kontrast: ciemniejszy tekst i wyraźniejsze obramowania, nieprzezroczyste panele */
+:root[data-contrast='high'] {
+  --text: #000000;
+  --text-2: #000000;
+  --text-3: #1f2937;
+  --text-muted: #374151;
+  --border: #4b5563;
+  --border-strong: #1f2937;
+  --link: #0a2dbd;
+  --link-hover: #061a73;
+  --accent: #1e2a78;
+  --focus: #0030cc;
+  --panel: #ffffff;
+}
+
+:root[data-contrast='high'][data-theme='dark'] {
+  --text: #ffffff;
+  --text-2: #ffffff;
+  --text-3: #e5e7eb;
+  --text-muted: #d1d5db;
+  --border: #9ca3af;
+  --border-strong: #d1d5db;
+  --link: #bfdbfe;
+  --link-hover: #ffffff;
+  --accent: #c7d2fe;
+  --focus: #fde047;
+  --panel: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-contrast='high']:not([data-theme='light']) {
+    --text: #ffffff;
+    --text-2: #ffffff;
+    --text-3: #e5e7eb;
+    --text-muted: #d1d5db;
+    --border: #9ca3af;
+    --border-strong: #d1d5db;
+    --link: #bfdbfe;
+    --link-hover: #ffffff;
+    --accent: #c7d2fe;
+    --focus: #fde047;
+    --panel: #000000;
+  }
+}
+
+:root[data-contrast='high'] a {
+  text-decoration: underline;
+}
+
+:root[data-contrast='high'] :focus-visible {
+  outline: 4px solid var(--focus);
+  outline-offset: 3px;
+}
+
+/* Duże cele dotykowe: przyciski, pola i przyciski mapy */
+:root[data-touch='large'] button,
+:root[data-touch='large'] select,
+:root[data-touch='large'] input:not([type='radio']):not([type='checkbox']) {
+  min-height: 48px;
+}
+
+:root[data-touch='large'] .maplibregl-ctrl-group button {
+  width: 44px;
+  height: 44px;
+}
+
+/* Ograniczone animacje (niezależnie od ustawienia systemu) */
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}

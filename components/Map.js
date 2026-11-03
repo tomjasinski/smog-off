@@ -8,12 +8,13 @@ import StationArticles from './StationArticles';
 import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
 import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
-import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
-import ThemeToggle from './ThemeToggle';
+import { getResolvedTheme, subscribeTheme } from '../lib/theme';
+import SettingsDialog from './SettingsDialog';
+import { loadSettings, resolveStart } from '../lib/settings';
+import { useSettings } from '../lib/settingsContext';
+import settingsStyles from '../styles/Settings.module.css';
 import FavoritesButton from './FavoritesButton';
-import PaletteToggle from './PaletteToggle';
-import { usePalette } from '../lib/palette';
-import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, MAX_FAVORITES } from '../lib/preferences';
+import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, clearPreferences, MAX_FAVORITES } from '../lib/preferences';
 import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
@@ -214,7 +215,9 @@ export default function SmogMap({ posts }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
   const [theme, setThemeState] = useState('dark');
-  const { palette } = usePalette();
+  const { settings } = useSettings();
+  const palette = settings.palette;
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [favoriteNote, setFavoriteNote] = useState('');
 
@@ -256,7 +259,7 @@ export default function SmogMap({ posts }) {
       const viewZoom = parseFloat(params.get('zoom'));
       const hasUrlView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
       // Kolejność: widok z adresu, ostatni widok użytkownika, a na końcu domyślnie Poznań (lub lokalizacja, jeśli zgoda już jest)
-      const saved = hasUrlView || params.has('station') ? null : loadView();
+      const saved = hasUrlView || params.has('station') ? null : resolveStart(loadSettings(), loadView());
       const hasView = hasUrlView || Boolean(saved);
       const startLat = hasUrlView ? viewLat : saved?.lat;
       const startLng = hasUrlView ? viewLng : saved?.lng;
@@ -291,9 +294,10 @@ export default function SmogMap({ posts }) {
         addMapLayers(map);
 
         // Na ekranach dotykowych szukamy punktu w promieniu kilkunastu pikseli i wybieramy najbliższy (palec nie trafia w sam znacznik)
-        const touchRadius = window.matchMedia('(pointer: coarse)').matches ? 14 : 0;
+        const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
         const hitTest = (point) => {
           const layers = ['cl-circle', 'pt', 'pt-flat'];
+          const touchRadius = document.documentElement.dataset.touch === 'large' ? 28 : coarsePointer ? 14 : 0;
           if (!touchRadius) return map.queryRenderedFeatures(point, { layers })[0];
           const box = [[point.x - touchRadius, point.y - touchRadius], [point.x + touchRadius, point.y + touchRadius]];
           let best;
@@ -416,6 +420,12 @@ export default function SmogMap({ posts }) {
     setFavoriteNote('');
   }, [selectedStation]);
 
+  // Strefy oddziaływania (rozmyte pola wokół stacji) można wyłączyć w ustawieniach
+  useEffect(() => {
+    if (!mapInstance) return;
+    mapInstance.setLayoutProperty('influence', 'visibility', settings.zones ? 'visible' : 'none');
+  }, [mapInstance, settings.zones]);
+
   // Link z listy stacji (?station=<id>): pokazujemy okolice stacji (5 km dookoła), bez otwierania szczegółów
   const stationFocused = useRef(false);
   useEffect(() => {
@@ -514,8 +524,37 @@ export default function SmogMap({ posts }) {
 
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
-      <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
-      <PaletteToggle variant="map" />
+      <button
+        type="button"
+        className={settingsStyles.mapButton}
+        onClick={() => setSettingsOpen(true)}
+        title="Ustawienia"
+        aria-label="Ustawienia"
+        aria-haspopup="dialog"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+        </svg>
+      </button>
+      {settingsOpen && (
+        <SettingsDialog
+          onClose={() => setSettingsOpen(false)}
+          mapContext={{
+            stations: airData,
+            favorites,
+            getView: () => {
+              if (!mapInstance) return null;
+              const { lat, lng } = mapInstance.getCenter();
+              return { lat, lng, zoom: mapInstance.getZoom() };
+            },
+            onClearData: () => {
+              clearPreferences();
+              setFavorites([]);
+            }
+          }}
+        />
+      )}
       <FavoritesButton favorites={favorites} stations={airData} onSelect={openFavorite} onRemove={removeFavorite} />
 
       {loading && (

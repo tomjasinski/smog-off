@@ -113,34 +113,6 @@
 }
 
 /* Przycisk motywu: ten sam styl co przycisk lokalizacji, tuż pod nim */
-.themeButton {
-  position: absolute;
-  top: 118px;
-  left: 10px;
-  z-index: 600;
-  width: 29px;
-  height: 29px;
-  padding: 0;
-  background: #fff;
-  border: 0;
-  border-radius: 4px;
-  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
-  color: #333;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.themeButton:hover {
-  background: #f2f2f2;
-}
-
-.themeButton:focus-visible {
-  outline: 3px solid #2563eb;
-  outline-offset: 2px;
-}
-
 .userDot {
   width: 16px;
   height: 16px;
@@ -500,4 +472,19 @@
 .favoriteNote {
   color: var(--text-3);
   font-size: 0.85rem;
+}
+
+/* Duże cele dotykowe: przycisk lokalizacji pod powiększonym zoomem MapLibre */
+:global(:root[data-touch='large']) .locationButton {
+  top: 110px;
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 767px) {
+  :global(:root[data-touch='large']) .locationButton {
+    top: auto;
+    width: 52px;
+    height: 52px;
+  }
 }

@@ -139,3 +139,22 @@
     top: 118px;
   }
 }
+
+/* Duże cele dotykowe */
+:global(:root[data-touch='large']) .button {
+  top: 218px;
+  width: 44px;
+  height: 44px;
+}
+
+:global(:root[data-touch='large']) .panel {
+  top: 218px;
+  left: 62px;
+}
+
+@media (max-width: 767px) {
+  :global(:root[data-touch='large']) .button,
+  :global(:root[data-touch='large']) .panel {
+    top: 164px;
+  }
+}

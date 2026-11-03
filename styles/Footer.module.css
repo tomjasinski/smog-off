@@ -32,3 +32,23 @@
   font-size: 0.8rem;
   color: #9ca3af;
 }
+
+.settingsButton {
+  padding: 0.5rem 0.75rem;
+  border: 0;
+  background: none;
+  color: #93c5fd;
+  font: inherit;
+  cursor: pointer;
+}
+
+.settingsButton:hover {
+  color: #dbeafe;
+  text-decoration: underline;
+}
+
+.settingsButton:focus-visible {
+  outline: 3px solid #93c5fd;
+  outline-offset: 2px;
+  border-radius: 2px;
+}

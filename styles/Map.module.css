@@ -462,3 +462,42 @@
     bottom: calc(132px + env(safe-area-inset-bottom));
   }
 }
+
+/* Przycisk ulubionych w szczegółach stacji */
+.dialogActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.favoriteToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-height: 44px;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.favoriteToggle:hover {
+  background: var(--surface-3);
+}
+
+.favoriteToggle:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.favoriteNote {
+  color: var(--text-3);
+  font-size: 0.85rem;
+}

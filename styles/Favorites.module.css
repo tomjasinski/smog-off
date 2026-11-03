@@ -1,0 +1,141 @@
+/* Przycisk ulubionych: pod przyciskiem motywu, w kolumnie kontrolek po lewej */
+.button {
+  position: absolute;
+  top: 157px;
+  left: 10px;
+  z-index: 600;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  background: #fff;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.button:hover {
+  background: #f2f2f2;
+}
+
+.button:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.panel {
+  position: absolute;
+  top: 157px;
+  left: 48px;
+  z-index: 650;
+  width: min(300px, calc(100% - 60px));
+  padding: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: 0 6px 24px var(--shadow);
+  backdrop-filter: blur(10px);
+}
+
+.title {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+.empty {
+  margin: 0;
+  color: var(--text-3);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: stretch;
+  gap: 0.25rem;
+}
+
+.stationButton {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stationButton:hover:not(:disabled) {
+  background: var(--surface-3);
+}
+
+.stationButton:disabled {
+  cursor: default;
+  opacity: 0.8;
+}
+
+.stationButton:focus-visible,
+.remove:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.name {
+  max-width: 100%;
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.missing {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+}
+
+.remove {
+  flex: none;
+  width: 44px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text-3);
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--surface-3);
+}
+
+/* Mobile: położenie lokalizacji przeniesiono w prawy dolny róg, więc kolumna po lewej jest krótsza */
+@media (max-width: 767px) {
+  .button,
+  .panel {
+    top: 118px;
+  }
+}

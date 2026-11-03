@@ -10,6 +10,8 @@ import BlogSheet from './BlogSheet';
 import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
 import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
 import ThemeToggle from './ThemeToggle';
+import FavoritesButton from './FavoritesButton';
+import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, MAX_FAVORITES } from '../lib/preferences';
 import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
@@ -210,6 +212,8 @@ export default function SmogMap({ posts }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
   const [theme, setThemeState] = useState('dark');
+  const [favorites, setFavorites] = useState([]);
+  const [favoriteNote, setFavoriteNote] = useState('');
 
   const containerRef = useRef(null);
   const glRef = useRef(null);
@@ -247,14 +251,20 @@ export default function SmogMap({ posts }) {
       const viewLat = parseFloat(params.get('lat'));
       const viewLng = parseFloat(params.get('lng'));
       const viewZoom = parseFloat(params.get('zoom'));
-      const hasView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
+      const hasUrlView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
+      // Kolejność: widok z adresu, ostatni widok użytkownika, a na końcu domyślnie Poznań (lub lokalizacja, jeśli zgoda już jest)
+      const saved = hasUrlView || params.has('station') ? null : loadView();
+      const hasView = hasUrlView || Boolean(saved);
+      const startLat = hasUrlView ? viewLat : saved?.lat;
+      const startLng = hasUrlView ? viewLng : saved?.lng;
+      const startZoom = hasUrlView ? viewZoom : saved?.zoom;
 
       try {
         map = new gl.Map({
           container: containerRef.current,
           style: buildMapStyle(tilejson, getResolvedTheme()),
-          center: hasView ? [viewLng, viewLat] : initialCenterRef.current,
-          zoom: hasView && Number.isFinite(viewZoom) ? Math.min(Math.max(viewZoom, 6), 18) : 11,
+          center: hasView ? [startLng, startLat] : initialCenterRef.current,
+          zoom: hasView && Number.isFinite(startZoom) ? Math.min(Math.max(startZoom, 6), 18) : 11,
           minZoom: 6,
           maxZoom: 18,
           maxBounds: POLAND_BOUNDS,
@@ -315,6 +325,11 @@ export default function SmogMap({ posts }) {
         };
         updateViewRef.current = updateView;
         map.on('moveend', updateView);
+        // Zapamiętujemy, gdzie użytkownik skończył, żeby następnym razem otworzyć mapę w tym samym miejscu
+        map.on('moveend', () => {
+          const { lat, lng } = map.getCenter();
+          saveView({ lat, lng, zoom: map.getZoom() });
+        });
 
         map.on('click', (e) => {
           const feature = hitTest(e.point);
@@ -366,6 +381,37 @@ export default function SmogMap({ posts }) {
     mapInstance.getSource('stations-flat').setData(points);
     updateViewRef.current?.();
   }, [airData, mapInstance]);
+
+  // Ulubione stacje zapamiętane w przeglądarce
+  useEffect(() => {
+    setFavorites(loadFavorites());
+  }, []);
+
+  const toggleSelectedFavorite = () => {
+    const { list, status } = toggleFavorite(favorites, selectedStation);
+    if (status === 'full') {
+      setFavoriteNote(`Możesz mieć najwyżej ${MAX_FAVORITES} ulubione stacje. Usuń jedną, aby dodać kolejną.`);
+      return;
+    }
+    setFavorites(list);
+    saveFavorites(list);
+    setFavoriteNote(status === 'added' ? 'Dodano do ulubionych.' : 'Usunięto z ulubionych.');
+  };
+
+  const removeFavorite = (id) => {
+    const list = favorites.filter((f) => f.id !== id);
+    setFavorites(list);
+    saveFavorites(list);
+  };
+
+  const openFavorite = (station) => {
+    mapInstance?.flyTo({ center: [station.longitude, station.latitude], zoom: Math.max(mapInstance.getZoom(), 13) });
+    setSelectedStation(station);
+  };
+
+  useEffect(() => {
+    setFavoriteNote('');
+  }, [selectedStation]);
 
   // Link z listy stacji (?station=<id>): pokazujemy okolice stacji (5 km dookoła), bez otwierania szczegółów
   const stationFocused = useRef(false);
@@ -466,6 +512,7 @@ export default function SmogMap({ posts }) {
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
       <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+      <FavoritesButton favorites={favorites} stations={airData} onSelect={openFavorite} onRemove={removeFavorite} />
 
       {loading && (
         <div className={styles.dataLoading} role="status">
@@ -550,6 +597,19 @@ export default function SmogMap({ posts }) {
                 <span className={styles.label}>🌀 Ciśnienie</span>
                 <span className={styles.value}>{selectedStation.data.pressure.toFixed(0)} hPa</span>
               </div>
+            </div>
+
+            <div className={styles.dialogActions}>
+              <button
+                type="button"
+                className={styles.favoriteToggle}
+                onClick={toggleSelectedFavorite}
+                aria-pressed={favorites.some((f) => f.id === String(selectedStation.id))}
+              >
+                <span aria-hidden="true">{favorites.some((f) => f.id === String(selectedStation.id)) ? '★' : '☆'}</span>{' '}
+                {favorites.some((f) => f.id === String(selectedStation.id)) ? 'W ulubionych' : 'Dodaj do ulubionych'}
+              </button>
+              <span className={styles.favoriteNote} role="status">{favoriteNote}</span>
             </div>
 
             <ShareStationButton station={selectedStation} />

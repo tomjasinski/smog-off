@@ -3,7 +3,8 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import { useEffect, useMemo, useState, useRef } from 'react';
 import Link from 'next/link';
 import MapLegend from './MapLegend';
-import ShareStationButton from './ShareStationButton';
+import ShareLinkButton from './ShareLinkButton';
+import { WhoNote, StaleNote } from './StationInsights';
 import StationArticles from './StationArticles';
 import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
@@ -18,7 +19,8 @@ import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, clear
 import { cityPageSlugs } from '../lib/cities';
 import { getReadableTextColor, getPMColor, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
-import { useT, intlLocale } from '../lib/i18n';
+import { useT, intlLocale, localePrefix } from '../lib/i18n';
+import { stationKey, hashId, matchesStation } from '../lib/stationKey';
 
 // [zachód, południe, wschód, północ]
 const POLAND_BOUNDS = [[13.5, 48.5], [24.8, 55.4]];
@@ -224,6 +226,8 @@ export default function SmogMap({ posts }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [favoriteNote, setFavoriteNote] = useState('');
+  const [shareNote, setShareNote] = useState('');
+  const [offlineSince, setOfflineSince] = useState(null);
 
   const containerRef = useRef(null);
   const glRef = useRef(null);
@@ -422,6 +426,7 @@ export default function SmogMap({ posts }) {
 
   useEffect(() => {
     setFavoriteNote('');
+    setShareNote('');
   }, [selectedStation]);
 
   // Strefy oddziaływania (rozmyte pola wokół stacji) można wyłączyć w ustawieniach
@@ -436,7 +441,7 @@ export default function SmogMap({ posts }) {
     if (!mapInstance || airData.length === 0 || stationFocused.current) return;
     stationFocused.current = true;
     const stationId = new URLSearchParams(window.location.search).get('station');
-    const station = stationId && airData.find((s) => String(s.id) === stationId);
+    const station = stationId && airData.find((s) => matchesStation(s, stationId));
     if (!station) return;
     const radiusKm = 5;
     const dLat = radiusKm / 111.32;
@@ -493,9 +498,11 @@ export default function SmogMap({ posts }) {
       if (!document.hidden && Date.now() - lastFetch > REFRESH_MS) refresh();
     };
     document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('online', refresh);
     return () => {
       clearInterval(interval);
       document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('online', refresh);
     };
   }, [mapReady]);
 
@@ -503,6 +510,8 @@ export default function SmogMap({ posts }) {
     try {
       const response = await fetch('/api/air-quality');
       const result = await response.json();
+      // Service worker oznacza odpowiedzi z cache (brak sieci): pokazujemy, z kiedy są dane
+      setOfflineSince(response.headers.get('x-from-cache') === '1' ? result.timestamp : null);
 
       if (result.data) {
         setAirData(result.data);
@@ -564,6 +573,14 @@ export default function SmogMap({ posts }) {
       {loading && (
         <div className={styles.dataLoading} role="status">
           {t('Ładowanie danych o jakości powietrza…')}
+        </div>
+      )}
+
+      {offlineSince && (
+        <div className={styles.offlineBanner} role="status">
+          {t('Brak połączenia z serwerem. Pokazuję dane z {time}.', {
+            time: new Date(offlineSince).toLocaleString(intlLocale(locale), { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+          })}
         </div>
       )}
 
@@ -659,10 +676,20 @@ export default function SmogMap({ posts }) {
                 <span aria-hidden="true">{favorites.some((f) => f.id === String(selectedStation.id)) ? '★' : '☆'}</span>{' '}
                 {favorites.some((f) => f.id === String(selectedStation.id)) ? t('W ulubionych') : t('Dodaj do ulubionych')}
               </button>
-              <span className={styles.favoriteNote} role="status">{favoriteNote}</span>
+              <ShareLinkButton
+                title={`SmogOFF – ${selectedStation.name}`}
+                text={`${selectedStation.name}, ${selectedStation.city}: PM2.5 ${selectedStation.data.pm25.toFixed(1)} µg/m³, PM10 ${selectedStation.data.pm10.toFixed(1)} µg/m³ (${t(selectedStation.aqi.label)})`}
+                url={`${window.location.origin}${localePrefix(locale)}/stacja/${encodeURIComponent(stationKey(selectedStation))}`}
+                warm={[
+                  `/stacja/${encodeURIComponent(stationKey(selectedStation))}`,
+                  `/api/og?station=${hashId(selectedStation.id)}&lang=${locale}`
+                ]}
+                onStatus={setShareNote}
+              />
             </div>
+            <p className={styles.favoriteNote} role="status">{favoriteNote || shareNote}</p>
 
-            <ShareStationButton station={selectedStation} />
+            <WhoNote pm25={selectedStation.data.pm25} pm10={selectedStation.data.pm10} />
 
             <div className={styles.location}>
               <p><strong>{t('📍 Lokalizacja:')}</strong></p>
@@ -671,6 +698,8 @@ export default function SmogMap({ posts }) {
             </div>
             <StationArticles level={selectedStation.aqi.level} posts={posts} />
 
+
+            <StaleNote timestamp={selectedStation.timestamp} />
 
             <div className={styles.timestamp}>
               {t('⏱️ Aktualizacja:')} {new Date(selectedStation.timestamp).toLocaleString(intlLocale(locale))}

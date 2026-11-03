@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
 import Footer from '../../components/Footer';
@@ -5,6 +6,10 @@ import StationArticles from '../../components/StationArticles';
 import LevelBadge from '../../components/LevelBadge';
 import SocialMeta from '../../components/SocialMeta';
 import ShareImageButton from '../../components/ShareImageButton';
+import ShareLinkButton from '../../components/ShareLinkButton';
+import SortSelect from '../../components/SortSelect';
+import { QUALITY_SORT_OPTIONS, sortByMode } from '../../lib/sorting';
+import { SITE_URL } from '../../lib/site';
 import { renderCityImage } from '../../lib/shareImage';
 import { getFreshStations } from '../../lib/airQualityServer';
 import { getAllPosts } from '../../lib/blogPosts';
@@ -12,7 +17,7 @@ import { groupCities } from '../../lib/cities';
 import { getReadableTextColor, paletteColor } from '../../lib/aqiLevels';
 import pageStyles from '../../styles/StatsPage.module.css';
 import styles from '../../styles/CityPage.module.css';
-import { useT } from '../../lib/i18n';
+import { useT, localePrefix } from '../../lib/i18n';
 
 const REVALIDATE_SECONDS = 600;
 // Ile innych miast pokazujemy na dole strony (miasta z największą liczbą stacji; linkowanie wewnętrzne)
@@ -97,6 +102,9 @@ function buildCityImage(city, t, locale) {
 
 export default function CityPage({ city, others, posts, generatedAt }) {
   const { t, locale } = useT();
+  const [sort, setSort] = useState('pm25-desc');
+  const [shareNote, setShareNote] = useState('');
+  const sortedStations = useMemo(() => sortByMode(city.stations, sort), [city.stations, sort]);
   const title = t('Jakość powietrza {city} – smog na żywo | SmogOFF', { city: city.name });
   const description = t('Jakość powietrza – {city}: aktualne PM2.5 {pm25} µg/m³, PM10 {pm10} µg/m³, poziom: {level}. Dane na podstawie {count} stacji pomiarowych, aktualizowane na bieżąco.', {
     city: city.name,
@@ -147,6 +155,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
 
           <section className={styles.section} aria-labelledby="stacje-miasta">
             <h2 id="stacje-miasta">{t('Stacje pomiarowe w mieście {city}', { city: city.name })}</h2>
+            <SortSelect value={sort} onChange={setSort} options={QUALITY_SORT_OPTIONS} />
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
@@ -157,7 +166,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {city.stations.map((s) => (
+                  {sortedStations.map((s) => (
                     <tr key={s.id}>
                       <th scope="row" style={{ borderLeft: `6px solid ${paletteColor(s.color)}` }}>
                         <span className={styles.stationName}>{s.name}</span>
@@ -176,11 +185,21 @@ export default function CityPage({ city, others, posts, generatedAt }) {
             </div>
           </section>
 
-          <ShareImageButton
-            title={t('Jakość powietrza: {city}', { city: city.name })}
-            text={t('Jakość powietrza w mieście {city} (SmogOFF)', { city: city.name })}
-            render={() => buildCityImage(city, t, locale)}
-          />
+          <div className={styles.shareRow}>
+            <ShareImageButton
+              title={t('Jakość powietrza: {city}', { city: city.name })}
+              text={t('Jakość powietrza w mieście {city} (SmogOFF)', { city: city.name })}
+              render={() => buildCityImage(city, t, locale)}
+            />
+            <ShareLinkButton
+              title={t('Jakość powietrza: {city}', { city: city.name })}
+              text={t('Jakość powietrza w mieście {city} (SmogOFF)', { city: city.name })}
+              url={`${SITE_URL}${localePrefix(locale)}/miasto/${city.slug}`}
+              warm={[`/api/og?city=${city.slug}&lang=${locale}`]}
+              onStatus={setShareNote}
+            />
+            <span className={styles.shareNote} role="status">{shareNote}</span>
+          </div>
 
           <p className={styles.mapLink}>
             <Link href={`/?lat=${city.lat.toFixed(4)}&lng=${city.lng.toFixed(4)}&zoom=12`}>

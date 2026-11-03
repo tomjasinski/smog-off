@@ -1,9 +1,16 @@
-// Prosty service worker (zastępuje next-pwa/workbox): cache kafelków i fontów mapy, zasobów aplikacji i danych API.
+// Prosty service worker (zastępuje next-pwa/workbox): cache kafelków i fontów mapy, zasobów aplikacji, danych API
+// oraz odwiedzonych stron (żeby dało się je otworzyć bez internetu).
 const API_CACHE = 'air-quality-api-v1';
 const TILE_CACHE = 'ofm-tiles-v1';
 const GLYPH_CACHE = 'ofm-glyphs-v1';
 const STATIC_CACHE = 'next-static-v1';
-const KNOWN_CACHES = [API_CACHE, TILE_CACHE, GLYPH_CACHE, STATIC_CACHE];
+const PAGES_CACHE = 'pages-v1';
+const RUNTIME_CACHE = 'runtime-v1';
+const KNOWN_CACHES = [API_CACHE, TILE_CACHE, GLYPH_CACHE, STATIC_CACHE, PAGES_CACHE, RUNTIME_CACHE];
+const MAX_PAGES = 25;
+const PAGE_TIMEOUT_MS = 6000;
+// Pliki bez hasha w nazwie: sieć najpierw, a bez sieci kopia
+const RUNTIME_PATHS = ['/maplibre-gl-worker.mjs', '/manifest.json', '/icon-192x192.png', '/icon-512x512.png'];
 const MAX_TILES = 600;
 const MAX_STATIC = 120;
 const API_TIMEOUT_MS = 10000;
@@ -26,19 +33,41 @@ async function trimCache(cacheName, max) {
   }
 }
 
+// Odpowiedź z cache dostaje nagłówek, po którym strona wie, że pokazuje zapisane dane (a nie świeże)
+async function markFromCache(response) {
+  const headers = new Headers(response.headers);
+  headers.set('X-From-Cache', '1');
+  return new Response(await response.blob(), { status: response.status, statusText: response.statusText, headers });
+}
+
 // Sieć najpierw, a przy braku sieci (lub po timeout) kopia z cache
-async function networkFirst(request) {
-  const cache = await caches.open(API_CACHE);
+async function networkFirst(request, cacheName = API_CACHE, timeoutMs = API_TIMEOUT_MS, max) {
+  const cache = await caches.open(cacheName);
   try {
     const response = await Promise.race([
       fetch(request),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), API_TIMEOUT_MS)),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), timeoutMs)),
     ]);
-    if (response && response.ok) cache.put(request, response.clone());
+    if (response && response.ok) {
+      await cache.put(request, response.clone());
+      if (max) trimCache(cacheName, max);
+    }
     return response;
   } catch (err) {
     const cached = await cache.match(request);
-    if (cached) return cached;
+    if (cached) return markFromCache(cached);
+    throw err;
+  }
+}
+
+// Strona HTML: sieć najpierw, a bez sieci ta sama strona z cache albo strona główna
+async function pageNetworkFirst(request) {
+  try {
+    return await networkFirst(request, PAGES_CACHE, PAGE_TIMEOUT_MS, MAX_PAGES);
+  } catch (err) {
+    const cache = await caches.open(PAGES_CACHE);
+    const home = await cache.match('/');
+    if (home) return home;
     throw err;
   }
 }
@@ -64,6 +93,10 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin) {
     if (url.pathname === '/api/air-quality') {
       event.respondWith(networkFirst(request));
+    } else if (request.mode === 'navigate') {
+      event.respondWith(pageNetworkFirst(request));
+    } else if (RUNTIME_PATHS.includes(url.pathname)) {
+      event.respondWith(networkFirst(request, RUNTIME_CACHE));
     } else if (url.pathname.startsWith('/_next/static/')) {
       event.respondWith(cacheFirst(request, STATIC_CACHE, MAX_STATIC));
     }

@@ -16,6 +16,8 @@ export default function Footer() {
         <Link href="/stats">{t('Statystyki')}</Link>
         {' · '}
         <Link href="/miasta">{t('Miasta')}</Link>
+        {' · '}
+        <Link href="/o-danych">{t('O danych')}</Link>
       </p>
       <p>
         <LanguageSwitch />

@@ -33,3 +33,13 @@
   color: var(--text-3);
   font-size: 0.85rem;
 }
+
+/* Przycisk bez własnego marginesu i komunikatu (gdy rodzic układa go w jednym rzędzie z innym przyciskiem) */
+.bare {
+  display: flex;
+}
+
+.bare .button {
+  min-height: 44px;
+  white-space: nowrap;
+}

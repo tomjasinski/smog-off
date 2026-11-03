@@ -70,3 +70,8 @@ temp/
 
 # kopiowane skryptem scripts/copy-maplibre-worker.mjs
 public/maplibre-gl-worker.mjs
+
+# testy przeglądarkowe (Playwright)
+/test-results/
+/playwright-report/
+/e2e/.fixture.json

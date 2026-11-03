@@ -125,7 +125,9 @@ export default function StationsPage() {
                       {shown.map(s => (
                         <tr key={s.id}>
                           <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${s.aqi.color}` }}>
-                            {s.name}
+                            <Link href={{ pathname: '/', query: { station: s.id } }} className={styles.mapLink}>
+                              {s.name}
+                            </Link>
                             {s.street && <span className={styles.street}>{s.street}</span>}
                             <span className={styles.cityInline}><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></span>
                             <span className={styles.levelRow}><LevelBadge color={s.aqi.color} label={s.aqi.label} /></span>

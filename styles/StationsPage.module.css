@@ -108,6 +108,18 @@
   overflow-wrap: anywhere;
 }
 
+.mapLink {
+  color: inherit;
+  text-decoration: underline dotted #6b7280;
+  text-underline-offset: 3px;
+}
+
+.mapLink:hover,
+.mapLink:focus-visible {
+  color: #3f51b5;
+  text-decoration-style: solid;
+}
+
 .street {
   display: block;
   font-weight: 400;

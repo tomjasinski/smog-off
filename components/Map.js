@@ -277,7 +277,24 @@ export default function SmogMap({ posts }) {
         if (cancelled) return;
         addMapLayers(map);
 
-        const hitTest = (point) => map.queryRenderedFeatures(point, { layers: ['cl-circle', 'pt', 'pt-flat'] })[0];
+        // Na ekranach dotykowych szukamy punktu w promieniu kilkunastu pikseli i wybieramy najbliższy (palec nie trafia w sam znacznik)
+        const touchRadius = window.matchMedia('(pointer: coarse)').matches ? 14 : 0;
+        const hitTest = (point) => {
+          const layers = ['cl-circle', 'pt', 'pt-flat'];
+          if (!touchRadius) return map.queryRenderedFeatures(point, { layers })[0];
+          const box = [[point.x - touchRadius, point.y - touchRadius], [point.x + touchRadius, point.y + touchRadius]];
+          let best;
+          let bestDist = Infinity;
+          for (const feature of map.queryRenderedFeatures(box, { layers })) {
+            const p = map.project(feature.geometry.coordinates);
+            const dist = Math.hypot(p.x - point.x, p.y - point.y);
+            if (dist < bestDist) {
+              best = feature;
+              bestDist = dist;
+            }
+          }
+          return best;
+        };
 
         // Do 20 stacji w widoku: wszystkie jako pojedyncze punkty, więcej: klastry
         let flatMode = false;
@@ -349,6 +366,23 @@ export default function SmogMap({ posts }) {
     mapInstance.getSource('stations-flat').setData(points);
     updateViewRef.current?.();
   }, [airData, mapInstance]);
+
+  // Link z listy stacji (?station=<id>): pokazujemy okolice stacji (5 km dookoła), bez otwierania szczegółów
+  const stationFocused = useRef(false);
+  useEffect(() => {
+    if (!mapInstance || airData.length === 0 || stationFocused.current) return;
+    stationFocused.current = true;
+    const stationId = new URLSearchParams(window.location.search).get('station');
+    const station = stationId && airData.find((s) => String(s.id) === stationId);
+    if (!station) return;
+    const radiusKm = 5;
+    const dLat = radiusKm / 111.32;
+    const dLng = radiusKm / (111.32 * Math.cos((station.latitude * Math.PI) / 180));
+    mapInstance.fitBounds(
+      [[station.longitude - dLng, station.latitude - dLat], [station.longitude + dLng, station.latitude + dLat]],
+      { duration: 0, maxZoom: 18 }
+    );
+  }, [mapInstance, airData]);
 
   // Miasta z własną podstroną: nazwa w szczegółach stacji staje się linkiem
   const citySlugs = useMemo(() => cityPageSlugs(airData), [airData]);

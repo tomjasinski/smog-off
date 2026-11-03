@@ -436,3 +436,29 @@
 .cityLink:hover {
   color: #1d4ed8;
 }
+
+/* Mobile: przycisk lokalizacji w prawym dolnym rogu (w zasięgu kciuka), nad przyciskiem źródeł mapy,
+   z celem dotykowym 44 px; po lewej zostaje zoom, po prawej u góry legenda */
+@media (max-width: 767px) {
+  .locationButton {
+    top: auto;
+    left: auto;
+    right: 10px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+
+  .locationButton svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Dymek podpowiedzi nad przyciskiem lokalizacji, żeby się nie nakładały */
+  .instructionTip {
+    bottom: calc(132px + env(safe-area-inset-bottom));
+  }
+}

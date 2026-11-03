@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Footer from '../../components/Footer';
 import StationArticles from '../../components/StationArticles';
 import LevelBadge from '../../components/LevelBadge';
+import SocialMeta from '../../components/SocialMeta';
 import ShareImageButton from '../../components/ShareImageButton';
 import { renderCityImage } from '../../lib/shareImage';
 import { getFreshStations } from '../../lib/airQualityServer';
@@ -104,11 +105,8 @@ export default function CityPage({ city, others, posts, generatedAt }) {
         <title>{title}</title>
         <meta name="description" content={description} />
         <link rel="canonical" href={url} />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={url} />
       </Head>
+      <SocialMeta title={title} description={description} url={url} image={`/api/og?city=${city.slug}`} />
 
       <main className={pageStyles.container}>
         <Link href="/" className={pageStyles.backLink}>← Powrót do mapy</Link>

@@ -9,7 +9,7 @@ export default function ShareStationButton({ station }) {
     const payload = {
       title: `SmogOFF – ${station.name}`,
       text: `${station.name}, ${station.city}: PM2.5 ${pm25.toFixed(1)} µg/m³, PM10 ${pm10.toFixed(1)} µg/m³ (${station.aqi.label})`,
-      url: window.location.origin
+      url: `${window.location.origin}/stacja/${encodeURIComponent(station.id)}`
     };
 
     try {

@@ -5,6 +5,8 @@ import { getAllPosts } from '../lib/blogPosts';
 import BlogCard from '../components/BlogCard';
 import styles from '../styles/Home.module.css';
 import Footer from '../components/Footer';
+import SocialMeta from '../components/SocialMeta';
+import { SITE_URL } from '../lib/site';
 
 const Map = dynamic(() => import('../components/Map'), { ssr: false });
 
@@ -16,6 +18,12 @@ export default function Home({ posts }) {
         <meta name="description" content="Monitoruj jakość powietrza w Polsce w czasie rzeczywistym" />
         <link rel="preconnect" href="https://tiles.openfreemap.org" crossOrigin="" />
       </Head>
+      <SocialMeta
+        title="SmogOFF – mapa smogowa Polski"
+        description="Monitoruj jakość powietrza w Polsce w czasie rzeczywistym"
+        url={SITE_URL}
+        image="/api/og"
+      />
 
       <nav aria-label="Skróty">
         <a href="#artykuly" className="skip-link">Przejdź do artykułów</a>

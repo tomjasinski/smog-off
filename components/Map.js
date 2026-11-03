@@ -8,11 +8,17 @@ import StationArticles from './StationArticles';
 import CityLink from './CityLink';
 import BlogSheet from './BlogSheet';
 import { buildMapStyle, applyMapTheme, TILEJSON_URL } from '../lib/mapStyle';
-import { getResolvedTheme, setTheme, subscribeTheme } from '../lib/theme';
-import ThemeToggle from './ThemeToggle';
+import { getResolvedTheme, subscribeTheme } from '../lib/theme';
+import SettingsDialog from './SettingsDialog';
+import { loadSettings, resolveStart } from '../lib/settings';
+import { useSettings } from '../lib/settingsContext';
+import settingsStyles from '../styles/Settings.module.css';
+import FavoritesButton from './FavoritesButton';
+import { loadView, saveView, loadFavorites, saveFavorites, toggleFavorite, clearPreferences, MAX_FAVORITES } from '../lib/preferences';
 import { cityPageSlugs } from '../lib/cities';
-import { getReadableTextColor, getPMColor } from '../lib/aqiLevels';
+import { getReadableTextColor, getPMColor, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/Map.module.css';
+import { useT, intlLocale } from '../lib/i18n';
 
 // [zachód, południe, wschód, północ]
 const POLAND_BOUNDS = [[13.5, 48.5], [24.8, 55.4]];
@@ -46,6 +52,7 @@ const metersToPixels = (zoomFactor) => [
 ];
 
 function MapInstructions({ map }) {
+  const { t } = useT();
   const [showTip, setShowTip] = useState(true);
 
   useEffect(() => {
@@ -65,7 +72,7 @@ function MapInstructions({ map }) {
   return (
     <div className={styles.instructionTip}>
       <div className={styles.tipContent}>
-        👆 Kliknij na punkt, aby zobaczyć szczegóły
+        {t('👆 Kliknij na punkt, aby zobaczyć szczegóły')}
       </div>
     </div>
   );
@@ -84,11 +91,12 @@ function circlePolygon(lng, lat, radiusKm, steps = 32) {
 
 const stationFeature = (station) => ({
   type: 'Feature',
-  properties: { id: String(station.id), color: station.aqi.color, lat: station.latitude },
+  properties: { id: String(station.id), color: paletteColor(station.aqi.color), lat: station.latitude },
   geometry: { type: 'Point', coordinates: [station.longitude, station.latitude] }
 });
 
 function LocationButton({ map, gl }) {
+  const { t } = useT();
   const [locating, setLocating] = useState(false);
   const [locationFound, setLocationFound] = useState(false);
   const markerRef = useRef(null);
@@ -97,7 +105,7 @@ function LocationButton({ map, gl }) {
 
   const locateUser = () => {
     if (!('geolocation' in navigator)) {
-      alert('Nie można określić lokalizacji: przeglądarka nie obsługuje geolokalizacji.');
+      alert(t('Nie można określić lokalizacji: przeglądarka nie obsługuje geolokalizacji.'));
       return;
     }
     setLocating(true);
@@ -118,7 +126,7 @@ function LocationButton({ map, gl }) {
         dot.className = styles.userDot;
         markerRef.current = new gl.Marker({ element: dot })
           .setLngLat(center)
-          .setPopup(new gl.Popup({ offset: 12 }).setText('📍 Twoja lokalizacja'))
+          .setPopup(new gl.Popup({ offset: 12 }).setText(t('📍 Twoja lokalizacja')))
           .addTo(map);
         markerRef.current.togglePopup();
 
@@ -126,7 +134,7 @@ function LocationButton({ map, gl }) {
       },
       (error) => {
         setLocating(false);
-        alert('Nie można określić lokalizacji: ' + error.message);
+        alert(t('Nie można określić lokalizacji: {message}', { message: error.message }));
       },
       { enableHighAccuracy: false, timeout: 10000 }
     );
@@ -137,8 +145,8 @@ function LocationButton({ map, gl }) {
       className={styles.locationButton}
       onClick={locateUser}
       disabled={locating}
-      title="Znajdź moją lokalizację"
-      aria-label="Znajdź moją lokalizację"
+      title={t('Znajdź moją lokalizację')}
+      aria-label={t('Znajdź moją lokalizację')}
     >
       <svg
         className={locating ? styles.locatingIcon : undefined}
@@ -203,6 +211,7 @@ function addMapLayers(map) {
 }
 
 export default function SmogMap({ posts }) {
+  const { t, locale } = useT();
   const [airData, setAirData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStation, setSelectedStation] = useState(null);
@@ -210,6 +219,11 @@ export default function SmogMap({ posts }) {
   const [mapInstance, setMapInstance] = useState(null);
   const [mapError, setMapError] = useState(false);
   const [theme, setThemeState] = useState('dark');
+  const { settings } = useSettings();
+  const palette = settings.palette;
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [favorites, setFavorites] = useState([]);
+  const [favoriteNote, setFavoriteNote] = useState('');
 
   const containerRef = useRef(null);
   const glRef = useRef(null);
@@ -247,14 +261,20 @@ export default function SmogMap({ posts }) {
       const viewLat = parseFloat(params.get('lat'));
       const viewLng = parseFloat(params.get('lng'));
       const viewZoom = parseFloat(params.get('zoom'));
-      const hasView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
+      const hasUrlView = Number.isFinite(viewLat) && Number.isFinite(viewLng);
+      // Kolejność: widok z adresu, ostatni widok użytkownika, a na końcu domyślnie Poznań (lub lokalizacja, jeśli zgoda już jest)
+      const saved = hasUrlView || params.has('station') ? null : resolveStart(loadSettings(), loadView());
+      const hasView = hasUrlView || Boolean(saved);
+      const startLat = hasUrlView ? viewLat : saved?.lat;
+      const startLng = hasUrlView ? viewLng : saved?.lng;
+      const startZoom = hasUrlView ? viewZoom : saved?.zoom;
 
       try {
         map = new gl.Map({
           container: containerRef.current,
           style: buildMapStyle(tilejson, getResolvedTheme()),
-          center: hasView ? [viewLng, viewLat] : initialCenterRef.current,
-          zoom: hasView && Number.isFinite(viewZoom) ? Math.min(Math.max(viewZoom, 6), 18) : 11,
+          center: hasView ? [startLng, startLat] : initialCenterRef.current,
+          zoom: hasView && Number.isFinite(startZoom) ? Math.min(Math.max(startZoom, 6), 18) : 11,
           minZoom: 6,
           maxZoom: 18,
           maxBounds: POLAND_BOUNDS,
@@ -278,9 +298,10 @@ export default function SmogMap({ posts }) {
         addMapLayers(map);
 
         // Na ekranach dotykowych szukamy punktu w promieniu kilkunastu pikseli i wybieramy najbliższy (palec nie trafia w sam znacznik)
-        const touchRadius = window.matchMedia('(pointer: coarse)').matches ? 14 : 0;
+        const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
         const hitTest = (point) => {
           const layers = ['cl-circle', 'pt', 'pt-flat'];
+          const touchRadius = document.documentElement.dataset.touch === 'large' ? 28 : coarsePointer ? 14 : 0;
           if (!touchRadius) return map.queryRenderedFeatures(point, { layers })[0];
           const box = [[point.x - touchRadius, point.y - touchRadius], [point.x + touchRadius, point.y + touchRadius]];
           let best;
@@ -315,6 +336,11 @@ export default function SmogMap({ posts }) {
         };
         updateViewRef.current = updateView;
         map.on('moveend', updateView);
+        // Zapamiętujemy, gdzie użytkownik skończył, żeby następnym razem otworzyć mapę w tym samym miejscu
+        map.on('moveend', () => {
+          const { lat, lng } = map.getCenter();
+          saveView({ lat, lng, zoom: map.getZoom() });
+        });
 
         map.on('click', (e) => {
           const feature = hitTest(e.point);
@@ -365,7 +391,44 @@ export default function SmogMap({ posts }) {
     mapInstance.getSource('stations-cl').setData(points);
     mapInstance.getSource('stations-flat').setData(points);
     updateViewRef.current?.();
-  }, [airData, mapInstance]);
+  }, [airData, mapInstance, palette]);
+
+  // Ulubione stacje zapamiętane w przeglądarce
+  useEffect(() => {
+    setFavorites(loadFavorites());
+  }, []);
+
+  const toggleSelectedFavorite = () => {
+    const { list, status } = toggleFavorite(favorites, selectedStation);
+    if (status === 'full') {
+      setFavoriteNote(t('Możesz mieć najwyżej {max} ulubione stacje. Usuń jedną, aby dodać kolejną.', { max: MAX_FAVORITES }));
+      return;
+    }
+    setFavorites(list);
+    saveFavorites(list);
+    setFavoriteNote(status === 'added' ? t('Dodano do ulubionych.') : t('Usunięto z ulubionych.'));
+  };
+
+  const removeFavorite = (id) => {
+    const list = favorites.filter((f) => f.id !== id);
+    setFavorites(list);
+    saveFavorites(list);
+  };
+
+  const openFavorite = (station) => {
+    mapInstance?.flyTo({ center: [station.longitude, station.latitude], zoom: Math.max(mapInstance.getZoom(), 13) });
+    setSelectedStation(station);
+  };
+
+  useEffect(() => {
+    setFavoriteNote('');
+  }, [selectedStation]);
+
+  // Strefy oddziaływania (rozmyte pola wokół stacji) można wyłączyć w ustawieniach
+  useEffect(() => {
+    if (!mapInstance) return;
+    mapInstance.setLayoutProperty('influence', 'visibility', settings.zones ? 'visible' : 'none');
+  }, [mapInstance, settings.zones]);
 
   // Link z listy stacji (?station=<id>): pokazujemy okolice stacji (5 km dookoła), bez otwierania szczegółów
   const stationFocused = useRef(false);
@@ -458,18 +521,49 @@ export default function SmogMap({ posts }) {
 
       {mapError && (
         <div className={styles.mapError} role="alert">
-          <p>Nie udało się uruchomić mapy (wymagana jest obsługa WebGL2).</p>
-          <Link href="/stacje">Zobacz listę stacji</Link>
+          <p>{t('Nie udało się uruchomić mapy (wymagana jest obsługa WebGL2).')}</p>
+          <Link href="/stacje">{t('Zobacz listę stacji')}</Link>
         </div>
       )}
 
       {mapInstance && !loading && <MapInstructions map={mapInstance} />}
       {mapInstance && <LocationButton map={mapInstance} gl={glRef.current} />}
-      <ThemeToggle theme={theme} onToggle={() => setTheme(theme === 'dark' ? 'light' : 'dark')} />
+      <button
+        type="button"
+        className={settingsStyles.mapButton}
+        onClick={() => setSettingsOpen(true)}
+        title={t('Ustawienia')}
+        aria-label={t('Ustawienia')}
+        aria-haspopup="dialog"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3" />
+          <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+        </svg>
+      </button>
+      {settingsOpen && (
+        <SettingsDialog
+          onClose={() => setSettingsOpen(false)}
+          mapContext={{
+            stations: airData,
+            favorites,
+            getView: () => {
+              if (!mapInstance) return null;
+              const { lat, lng } = mapInstance.getCenter();
+              return { lat, lng, zoom: mapInstance.getZoom() };
+            },
+            onClearData: () => {
+              clearPreferences();
+              setFavorites([]);
+            }
+          }}
+        />
+      )}
+      <FavoritesButton favorites={favorites} stations={airData} onSelect={openFavorite} onRemove={removeFavorite} />
 
       {loading && (
         <div className={styles.dataLoading} role="status">
-          Ładowanie danych o jakości powietrza…
+          {t('Ładowanie danych o jakości powietrza…')}
         </div>
       )}
 
@@ -490,7 +584,7 @@ export default function SmogMap({ posts }) {
             <button
               className={styles.closeBtn}
               onClick={() => setSelectedStation(null)}
-              aria-label="Zamknij szczegóły stacji"
+              aria-label={t('Zamknij szczegóły stacji')}
               autoFocus
             >
               <span aria-hidden="true">×</span>
@@ -500,9 +594,9 @@ export default function SmogMap({ posts }) {
             
             <div 
               className={styles.statusBadge} 
-              style={{ backgroundColor: selectedStation.aqi.color, color: getReadableTextColor(selectedStation.aqi.color) }}
+              style={{ backgroundColor: paletteColor(selectedStation.aqi.color), color: getReadableTextColor(selectedStation.aqi.color) }}
             >
-              {selectedStation.aqi.label}
+              {t(selectedStation.aqi.label)}
             </div>
 
             <div className={styles.dataGrid}>
@@ -535,27 +629,43 @@ export default function SmogMap({ posts }) {
                   {selectedStation.data.pm10.toFixed(1)} µg/m³
                 </span>
               </div>
-              
+            </div>
+
+            {/* Pogoda: zawsze w jednym rzędzie */}
+            <div className={styles.weatherGrid}>
               <div className={styles.dataItem}>
-                <span className={styles.label}>🌡️ Temperatura</span>
+                <span className={styles.label}>{t('🌡️ Temperatura')}</span>
                 <span className={styles.value}>{selectedStation.data.temperature.toFixed(1)}°C</span>
               </div>
               
               <div className={styles.dataItem}>
-                <span className={styles.label}>💧 Wilgotność</span>
+                <span className={styles.label}>{t('💧 Wilgotność')}</span>
                 <span className={styles.value}>{selectedStation.data.humidity.toFixed(0)}%</span>
               </div>
               
               <div className={styles.dataItem}>
-                <span className={styles.label}>🌀 Ciśnienie</span>
+                <span className={styles.label}>{t('🌀 Ciśnienie')}</span>
                 <span className={styles.value}>{selectedStation.data.pressure.toFixed(0)} hPa</span>
               </div>
+            </div>
+
+            <div className={styles.dialogActions}>
+              <button
+                type="button"
+                className={styles.favoriteToggle}
+                onClick={toggleSelectedFavorite}
+                aria-pressed={favorites.some((f) => f.id === String(selectedStation.id))}
+              >
+                <span aria-hidden="true">{favorites.some((f) => f.id === String(selectedStation.id)) ? '★' : '☆'}</span>{' '}
+                {favorites.some((f) => f.id === String(selectedStation.id)) ? t('W ulubionych') : t('Dodaj do ulubionych')}
+              </button>
+              <span className={styles.favoriteNote} role="status">{favoriteNote}</span>
             </div>
 
             <ShareStationButton station={selectedStation} />
 
             <div className={styles.location}>
-              <p><strong>📍 Lokalizacja:</strong></p>
+              <p><strong>{t('📍 Lokalizacja:')}</strong></p>
               <p><CityLink name={selectedStation.city} slugs={citySlugs} className={styles.cityLink} /></p>
               {selectedStation.street && <p>{selectedStation.street}</p>}
             </div>
@@ -563,7 +673,7 @@ export default function SmogMap({ posts }) {
 
 
             <div className={styles.timestamp}>
-              ⏱️ Aktualizacja: {new Date(selectedStation.timestamp).toLocaleString('pl-PL')}
+              {t('⏱️ Aktualizacja:')} {new Date(selectedStation.timestamp).toLocaleString(intlLocale(locale))}
             </div>
           </div>
         </div>

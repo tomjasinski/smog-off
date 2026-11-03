@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import { AQI_LEVEL_LIST, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, describeRange, paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/MapLegend.module.css';
+import { useT } from '../lib/i18n';
 
 export default function MapLegend() {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -14,24 +16,24 @@ export default function MapLegend() {
         aria-expanded={open}
         aria-controls="legend-details"
       >
-        <span className={styles.title}>Jakość powietrza</span>
+        <span className={styles.title}>{t('Jakość powietrza')}</span>
         <span className={styles.bar} aria-hidden="true">
           {AQI_LEVEL_LIST.map(({ level, color }) => (
-            <span key={level} style={{ backgroundColor: color }} />
+            <span key={level} style={{ backgroundColor: paletteColor(color) }} />
           ))}
         </span>
         <span className={styles.ends} aria-hidden="true">
-          <span>{AQI_LEVEL_LIST[0].label}</span>
-          <span>{AQI_LEVEL_LIST[AQI_LEVEL_LIST.length - 1].label}</span>
+          <span>{t(AQI_LEVEL_LIST[0].label)}</span>
+          <span>{t(AQI_LEVEL_LIST[AQI_LEVEL_LIST.length - 1].label)}</span>
         </span>
       </button>
 
       {open && (
         <table id="legend-details" className={styles.details}>
-          <caption>Stężenie pyłu, µg/m³ (EAQI)</caption>
+          <caption>{t('Stężenie pyłu, µg/m³ (EAQI)')}</caption>
           <thead>
             <tr>
-              <th scope="col">Poziom</th>
+              <th scope="col">{t('Poziom')}</th>
               <th scope="col">PM2.5</th>
               <th scope="col">PM10</th>
             </tr>
@@ -40,8 +42,8 @@ export default function MapLegend() {
             {AQI_LEVEL_LIST.map(({ level, color, label }, i) => (
               <tr key={level}>
                 <th scope="row">
-                  <span className={styles.swatch} style={{ backgroundColor: color }} aria-hidden="true" />
-                  {label}
+                  <span className={styles.swatch} style={{ backgroundColor: paletteColor(color) }} aria-hidden="true" />
+                  {t(label)}
                 </th>
                 <td>{describeRange('pm25', i)}</td>
                 <td>{describeRange('pm10', i)}</td>
@@ -52,7 +54,7 @@ export default function MapLegend() {
       )}
       {open && (
         <p className={styles.note}>
-          Rozmyte pole wokół stacji to orientacyjny zasięg oddziaływania (ok. 1,5 km). Z dala od stacji dane są mniej pewne.
+          {t('Rozmyte pole wokół stacji to orientacyjny zasięg oddziaływania (ok. 1,5 km). Z dala od stacji dane są mniej pewne.')}
         </p>
       )}
     </div>

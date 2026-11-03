@@ -1,8 +1,43 @@
 import '../styles/globals.css'
 import Head from 'next/head'
-import { useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import SettingsDialog from '../components/SettingsDialog'
+import LocaleMeta from '../components/LocaleMeta'
+import { SettingsContext } from '../lib/settingsContext'
+import { DEFAULT_SETTINGS, loadSettings, saveSettings, clearSettings, applySettings } from '../lib/settings'
+import { setActivePalette } from '../lib/aqiLevels'
 
 export default function MyApp({ Component, pageProps }) {
+  // Ustawienia użytkownika: pierwszy render jak na serwerze (domyślne), zapamiętane wczytujemy po zamontowaniu.
+  // Stan jest tutaj, żeby zmiana odświeżyła całą stronę, także komponenty bez kontekstu (np. kolory poziomów).
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  setActivePalette(settings.palette);
+
+  useEffect(() => {
+    const loaded = loadSettings();
+    setSettings(loaded);
+    applySettings(loaded);
+  }, []);
+
+  const updateSettings = useCallback((patch) => {
+    setSettings((current) => {
+      const next = { ...current, ...patch };
+      saveSettings(next);
+      applySettings(next);
+      return next;
+    });
+  }, []);
+
+  const resetSettings = useCallback(() => {
+    clearSettings();
+    setSettings(DEFAULT_SETTINGS);
+    applySettings(DEFAULT_SETTINGS);
+  }, []);
+
+  const openSettings = useCallback(() => setSettingsOpen(true), []);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
+
   useEffect(() => {
     if (process.env.NODE_ENV === 'production' && 'serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -24,7 +59,11 @@ export default function MyApp({ Component, pageProps }) {
         <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
       </Head>
-      <Component {...pageProps} />
+      <LocaleMeta />
+      <SettingsContext.Provider value={{ settings, updateSettings, resetSettings, openSettings }}>
+        <Component {...pageProps} />
+        {settingsOpen && <SettingsDialog onClose={closeSettings} />}
+      </SettingsContext.Provider>
     </>
   )
 }

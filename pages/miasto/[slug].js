@@ -3,15 +3,16 @@ import Link from 'next/link';
 import Footer from '../../components/Footer';
 import StationArticles from '../../components/StationArticles';
 import LevelBadge from '../../components/LevelBadge';
+import SocialMeta from '../../components/SocialMeta';
 import ShareImageButton from '../../components/ShareImageButton';
 import { renderCityImage } from '../../lib/shareImage';
 import { getFreshStations } from '../../lib/airQualityServer';
 import { getAllPosts } from '../../lib/blogPosts';
 import { groupCities } from '../../lib/cities';
-import { SITE_URL } from '../../lib/site';
-import { getReadableTextColor } from '../../lib/aqiLevels';
+import { getReadableTextColor, paletteColor } from '../../lib/aqiLevels';
 import pageStyles from '../../styles/StatsPage.module.css';
 import styles from '../../styles/CityPage.module.css';
+import { useT } from '../../lib/i18n';
 
 const REVALIDATE_SECONDS = 600;
 // Ile innych miast pokazujemy na dole strony (miasta z największą liczbą stacji; linkowanie wewnętrzne)
@@ -82,72 +83,75 @@ export async function getStaticProps({ params }) {
 const timeOf = (timestamp) => (timestamp ? timestamp.slice(11, 16) : '–');
 
 // Grafika do udostępnienia: dane miasta (mediany) i jego stacje od najwyższego PM2.5
-function buildCityImage(city) {
+function buildCityImage(city, t, locale) {
   const latest = city.stations.map((s) => s.timestamp).filter(Boolean).sort().pop();
   return renderCityImage({
-    title: `Jakość powietrza: ${city.name}`,
-    subtitle: `Mediana odczytów ze stacji w mieście (µg/m³), poziom według indeksu EAQI.`,
+    title: t('Jakość powietrza: {city}', { city: city.name }),
+    subtitle: t('Mediana odczytów ze stacji w mieście (µg/m³), poziom według indeksu EAQI.'),
+    locale,
     city,
     rows: city.stations.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.street, color: s.color, label: s.label, pm25: s.pm25, pm10: s.pm10 })),
-    footer: ['Dane: ESA Poland', 'progi EAQI (EEA, WHO 2021)', latest ? `pomiar z ${latest.slice(0, 16)}` : null].filter(Boolean).join(' · ')
+    footer: [t('Dane: ESA Poland'), t('progi EAQI (EEA, WHO 2021)'), latest ? t('pomiar z {time}', { time: latest.slice(0, 16) }) : null].filter(Boolean).join(' · ')
   });
 }
 
 export default function CityPage({ city, others, posts, generatedAt }) {
-  const url = `${SITE_URL}/miasto/${city.slug}`;
-  const title = `Jakość powietrza ${city.name} – smog na żywo | SmogOFF`;
-  const description = `Jakość powietrza – ${city.name}: aktualne PM2.5 ${city.pm25} µg/m³, PM10 ${city.pm10} µg/m³, poziom: ${city.label}. Dane na podstawie ${city.count} stacji pomiarowych, aktualizowane na bieżąco.`;
+  const { t, locale } = useT();
+  const title = t('Jakość powietrza {city} – smog na żywo | SmogOFF', { city: city.name });
+  const description = t('Jakość powietrza – {city}: aktualne PM2.5 {pm25} µg/m³, PM10 {pm10} µg/m³, poziom: {level}. Dane na podstawie {count} stacji pomiarowych, aktualizowane na bieżąco.', {
+    city: city.name,
+    pm25: city.pm25,
+    pm10: city.pm10,
+    level: t(city.label),
+    count: city.count
+  });
 
   return (
     <>
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <link rel="canonical" href={url} />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:url" content={url} />
       </Head>
+      <SocialMeta title={title} description={description} path={`/miasto/${city.slug}`} image={`/api/og?city=${city.slug}`} />
 
       <main className={pageStyles.container}>
-        <Link href="/" className={pageStyles.backLink}>← Powrót do mapy</Link>
+        <Link href="/" className={pageStyles.backLink}>{t('← Powrót do mapy')}</Link>
         {' · '}
-        <Link href="/miasta" className={pageStyles.backLink}>Wszystkie miasta</Link>
+        <Link href="/miasta" className={pageStyles.backLink}>{t('Wszystkie miasta')}</Link>
 
         <article className={pageStyles.article}>
-          <h1>Jakość powietrza: {city.name}</h1>
+          <h1>{t('Jakość powietrza: {city}', { city: city.name })}</h1>
 
           <p className={styles.lead}>
-            Aktualny poziom:{' '}
-            <span className={styles.badge} style={{ backgroundColor: city.color, color: getReadableTextColor(city.color) }}>
-              {city.label}
+            {t('Aktualny poziom:')}{' '}
+            <span className={styles.badge} style={{ backgroundColor: paletteColor(city.color), color: getReadableTextColor(city.color) }}>
+              {t(city.label)}
             </span>
-            . Wartości to mediana odczytów (µg/m³) na podstawie {city.count} stacji w mieście, więc pojedynczy błędny czujnik nie zniekształca wyniku.
+            . {t('Wartości to mediana odczytów (µg/m³) na podstawie {count} stacji w mieście, więc pojedynczy błędny czujnik nie zniekształca wyniku.', { count: city.count })}
           </p>
 
           <div className={pageStyles.statsGrid}>
             <div className={pageStyles.statCard}>
-              <span className={pageStyles.statLabel}>PM2.5 (mediana)</span>
+              <span className={pageStyles.statLabel}>{t('PM2.5 (mediana)')}</span>
               <span className={pageStyles.statValue}>{city.pm25} µg/m³</span>
             </div>
             <div className={pageStyles.statCard}>
-              <span className={pageStyles.statLabel}>PM10 (mediana)</span>
+              <span className={pageStyles.statLabel}>{t('PM10 (mediana)')}</span>
               <span className={pageStyles.statValue}>{city.pm10} µg/m³</span>
             </div>
             <div className={pageStyles.statCard}>
-              <span className={pageStyles.statLabel}>Stacji pomiarowych</span>
+              <span className={pageStyles.statLabel}>{t('Stacji pomiarowych')}</span>
               <span className={pageStyles.statValue}>{city.count}</span>
             </div>
           </div>
 
           <section className={styles.section} aria-labelledby="stacje-miasta">
-            <h2 id="stacje-miasta">Stacje pomiarowe w mieście {city.name}</h2>
+            <h2 id="stacje-miasta">{t('Stacje pomiarowe w mieście {city}', { city: city.name })}</h2>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th scope="col">Stacja i poziom</th>
+                    <th scope="col">{t('Stacja i poziom')}</th>
                     <th scope="col">PM2.5</th>
                     <th scope="col">PM10</th>
                   </tr>
@@ -155,16 +159,16 @@ export default function CityPage({ city, others, posts, generatedAt }) {
                 <tbody>
                   {city.stations.map((s) => (
                     <tr key={s.id}>
-                      <th scope="row" style={{ borderLeft: `6px solid ${s.color}` }}>
+                      <th scope="row" style={{ borderLeft: `6px solid ${paletteColor(s.color)}` }}>
                         <span className={styles.stationName}>{s.name}</span>
                         {s.street && <span className={styles.street}>{s.street}</span>}
                         <span className={styles.levelRow}>
                           <LevelBadge color={s.color} label={s.label} />
-                          <span className={styles.time}>pomiar {timeOf(s.timestamp)}</span>
+                          <span className={styles.time}>{t('pomiar {time}', { time: timeOf(s.timestamp) })}</span>
                         </span>
                       </th>
-                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm25}</td>
-                      <td className={styles.value} style={{ backgroundColor: `${s.color}40` }}>{s.pm10}</td>
+                      <td className={styles.value} style={{ backgroundColor: `${paletteColor(s.color)}40` }}>{s.pm25}</td>
+                      <td className={styles.value} style={{ backgroundColor: `${paletteColor(s.color)}40` }}>{s.pm10}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -173,14 +177,14 @@ export default function CityPage({ city, others, posts, generatedAt }) {
           </section>
 
           <ShareImageButton
-            title={`Jakość powietrza: ${city.name}`}
-            text={`Jakość powietrza w mieście ${city.name} (SmogOFF)`}
-            render={() => buildCityImage(city)}
+            title={t('Jakość powietrza: {city}', { city: city.name })}
+            text={t('Jakość powietrza w mieście {city} (SmogOFF)', { city: city.name })}
+            render={() => buildCityImage(city, t, locale)}
           />
 
           <p className={styles.mapLink}>
             <Link href={`/?lat=${city.lat.toFixed(4)}&lng=${city.lng.toFixed(4)}&zoom=12`}>
-              Zobacz stacje miasta {city.name} na mapie →
+              {t('Zobacz stacje miasta {city} na mapie →', { city: city.name })}
             </Link>
           </p>
 
@@ -188,12 +192,12 @@ export default function CityPage({ city, others, posts, generatedAt }) {
 
           {others.length > 0 && (
             <nav className={styles.section} aria-labelledby="inne-miasta">
-              <h2 id="inne-miasta">Inne miasta</h2>
+              <h2 id="inne-miasta">{t('Inne miasta')}</h2>
               <ul className={styles.cityList}>
                 {others.map((c) => (
                   <li key={c.slug}>
                     <Link href={`/miasto/${c.slug}`}>
-                      <span className={styles.dot} style={{ backgroundColor: c.color }} aria-hidden="true"></span>
+                      <span className={styles.dot} style={{ backgroundColor: paletteColor(c.color) }} aria-hidden="true"></span>
                       {c.name}
                     </Link>
                   </li>
@@ -203,8 +207,7 @@ export default function CityPage({ city, others, posts, generatedAt }) {
           )}
 
           <p className={styles.note}>
-            Dane: ESA Poland. Poziomy wg Europejskiego Indeksu Jakości Powietrza (EAQI). Strona odświeżana co kilkanaście minut
-            (wygenerowano {generatedAt.slice(0, 16).replace('T', ' ')} UTC). Pomijamy pomiary starsze niż kilka godzin i odczyty poniżej 1 µg/m³.
+            {t('Dane: ESA Poland. Poziomy wg Europejskiego Indeksu Jakości Powietrza (EAQI). Strona odświeżana co kilkanaście minut (wygenerowano {time} UTC). Pomijamy pomiary starsze niż kilka godzin i odczyty poniżej 1 µg/m³.', { time: generatedAt.slice(0, 16).replace('T', ' ') })}
           </p>
         </article>
       </main>

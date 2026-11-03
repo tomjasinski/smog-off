@@ -1,0 +1,36 @@
+.switch {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border: 1px solid var(--border-strong, #d1d5db);
+  border-radius: 999px;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  background: var(--surface-3, #f3f4f6);
+}
+
+.current {
+  background: var(--accent, #3f51b5);
+  border-color: var(--accent, #3f51b5);
+  color: var(--surface, #fff);
+}
+
+.current:hover {
+  background: var(--accent, #3f51b5);
+}
+
+.link:focus-visible {
+  outline: 3px solid var(--focus, #1d4ed8);
+  outline-offset: 2px;
+}

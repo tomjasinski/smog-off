@@ -2,7 +2,7 @@ import { getReadableTextColor } from '../lib/aqiLevels';
 import Head from 'next/head';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { AQI_LEVEL_LIST, calculateAQI, describeRange } from '../lib/aqiLevels';
+import { AQI_LEVEL_LIST, calculateAQI, describeRange, paletteColor } from '../lib/aqiLevels';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
@@ -10,11 +10,13 @@ import { MAX_DATA_AGE_HOURS } from '../lib/freshness';
 import ShareImageButton from '../components/ShareImageButton';
 import { renderRankingImage, renderDistributionImage } from '../lib/shareImage';
 import styles from '../styles/StatsPage.module.css';
+import { useT } from '../lib/i18n';
 
 // Liczby w segmentach paska pokazujemy tylko, gdy segment jest dość szeroki (wąskie by się nakładały)
 const MIN_SEGMENT_SHARE_FOR_LABEL = 0.06;
 
 export default function StatsPage() {
+  const { t, locale } = useT();
   const [stats, setStats] = useState(null);
   const [stations, setStations] = useState([]);
   const [updatedAt, setUpdatedAt] = useState(null);
@@ -46,7 +48,7 @@ export default function StatsPage() {
       <div className={styles.container}>
         <div className={styles.loading}>
           <div className={styles.spinner}></div>
-          <p>Ładowanie statystyk...</p>
+          <p>{t('Ładowanie statystyk...')}</p>
         </div>
       </div>
     );
@@ -55,7 +57,7 @@ export default function StatsPage() {
   if (!stats) {
     return (
       <div className={styles.container}>
-        <p>Nie udało się załadować statystyk</p>
+        <p>{t('Nie udało się załadować statystyk')}</p>
       </div>
     );
   }
@@ -101,13 +103,13 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(c => (
-          <li key={c.city} className={styles.rankingItem} style={{ borderLeftColor: c.aqi.color }}>
-            <span className={styles.rankingDot} style={{ backgroundColor: c.aqi.color }} aria-hidden="true"></span>
+          <li key={c.city} className={styles.rankingItem} style={{ borderLeftColor: paletteColor(c.aqi.color) }}>
+            <span className={styles.rankingDot} style={{ backgroundColor: paletteColor(c.aqi.color) }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>
                 <CityLink name={c.city} slugs={citySlugs} className={styles.rankingLink} />
               </strong>
-              <span className={styles.rankingCity}>stacji: {c.count}</span>
+              <span className={styles.rankingCity}>{t('stacji: {count}', { count: c.count })}</span>
               <span className={styles.rankingLevel}><LevelBadge color={c.aqi.color} label={c.aqi.label} small /></span>
             </span>
             <span className={styles.rankingValues}>
@@ -126,8 +128,8 @@ export default function StatsPage() {
       <h3 id={id}>{title}</h3>
       <ol className={styles.rankingList}>
         {list.map(s => (
-          <li key={s.id} className={styles.rankingItem} style={{ borderLeftColor: s.aqi.color }}>
-            <span className={styles.rankingDot} style={{ backgroundColor: s.aqi.color }} aria-hidden="true"></span>
+          <li key={s.id} className={styles.rankingItem} style={{ borderLeftColor: paletteColor(s.aqi.color) }}>
+            <span className={styles.rankingDot} style={{ backgroundColor: paletteColor(s.aqi.color) }} aria-hidden="true"></span>
             <span className={styles.rankingName}>
               <strong>{s.name}</strong>
               {s.city && (
@@ -150,82 +152,84 @@ export default function StatsPage() {
 
   const imageFooter = () =>
     [
-      'Dane: ESA Poland',
-      'progi EAQI (EEA, WHO 2021)',
-      updatedAt ? `pomiar z ${updatedAt.slice(0, 16).replace('T', ' ')}` : null
+      t('Dane: ESA Poland'),
+      t('progi EAQI (EEA, WHO 2021)'),
+      updatedAt ? t('pomiar z {time}', { time: updatedAt.slice(0, 16).replace('T', ' ') }) : null
     ].filter(Boolean).join(' · ');
 
   const stationRows = (list) =>
     list.map((s, i) => ({ rank: i + 1, name: s.name, sub: s.city, color: s.aqi.color, label: s.aqi.label, pm25: s.data.pm25, pm10: s.data.pm10 }));
   const cityRows = (list) =>
-    list.map((c, i) => ({ rank: i + 1, name: c.city, sub: `stacji: ${c.count}`, color: c.aqi.color, label: c.aqi.label, pm25: c.pm25, pm10: c.pm10 }));
+    list.map((c, i) => ({ rank: i + 1, name: c.city, sub: t('stacji: {count}', { count: c.count }), color: c.aqi.color, label: c.aqi.label, pm25: c.pm25, pm10: c.pm10 }));
 
   // Każdy ranking (najczystsze / najbardziej zanieczyszczone) ma własną grafikę
   const rankingShare = ({ title, subtitle, kind, accent, rows }) => ({
     title,
-    text: `${title} w Polsce (SmogOFF)`,
+    text: t('{title} w Polsce (SmogOFF)', { title }),
     render: () =>
       renderRankingImage({
         title,
         subtitle,
-        sections: [{ title: `Top ${rows.length} ${kind}`, accent, rows }],
-        footer: imageFooter()
+        sections: [{ title: t('Top {n} {kind}', { n: rows.length, kind: t(kind) }), accent, rows }],
+        footer: imageFooter(),
+        locale
       })
   });
-  const STATIONS_SUBTITLE = 'Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5.';
-  const CITIES_SUBTITLE = `Mediana odczytów ze wszystkich stacji w mieście (µg/m³), miasta z co najmniej ${MIN_STATIONS_PER_CITY} stacjami.`;
+  const STATIONS_SUBTITLE = t('Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5.');
+  const CITIES_SUBTITLE = t('Mediana odczytów ze wszystkich stacji w mieście (µg/m³), miasta z co najmniej {min} stacjami.', { min: MIN_STATIONS_PER_CITY });
   const BEST = '#4ade80';
   const WORST = '#ef4444';
 
   const renderDistribution = () =>
     renderDistributionImage({
-      title: 'Jakość powietrza w Polsce',
-      subtitle: `Rozkład ${stats.total} stacji pomiarowych według poziomu jakości powietrza.`,
+      title: t('Jakość powietrza w Polsce'),
+      subtitle: t('Rozkład {total} stacji pomiarowych według poziomu jakości powietrza.', { total: stats.total }),
       stats,
-      footer: imageFooter()
+      footer: imageFooter(),
+      locale
     });
 
   return (
     <>
       <Head>
-        <title>Statystyki jakości powietrza - SmogOFF</title>
-        <meta name="description" content="Zbiorcze statystyki jakości powietrza w Polsce: średnie stężenia PM2.5 i PM10 oraz liczba stacji w poszczególnych kategoriach." />
+        <title>{t('Statystyki jakości powietrza - SmogOFF')}</title>
+        <meta name="description" content={t('Zbiorcze statystyki jakości powietrza w Polsce: średnie stężenia PM2.5 i PM10 oraz liczba stacji w poszczególnych kategoriach.')} />
       </Head>
 
       <main className={styles.container}>
         <Link href="/" className={styles.backLink}>
-          ← Powrót do mapy
+          {t('← Powrót do mapy')}
         </Link>
         {' · '}
         <Link href="/stacje" className={styles.backLink}>
-          Lista wszystkich stacji
+          {t('Lista wszystkich stacji')}
         </Link>
 
         <article className={styles.article}>
-          <h1>📊 Statystyki dla Polski</h1>
+          <h1>{t('📊 Statystyki dla Polski')}</h1>
           
           <div className={styles.statsGrid}>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Stacji pomiarowych</span>
+              <span className={styles.statLabel}>{t('Stacji pomiarowych')}</span>
               <span className={styles.statValue}>{stats.total}</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Średnie PM2.5</span>
+              <span className={styles.statLabel}>{t('Średnie PM2.5')}</span>
               <span className={styles.statValue}>{stats.avgPM25} µg/m³</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Średnie PM10</span>
+              <span className={styles.statLabel}>{t('Średnie PM10')}</span>
               <span className={styles.statValue}>{stats.avgPM10} µg/m³</span>
             </div>
             <div className={styles.statCard}>
-              <span className={styles.statLabel}>Temperatura</span>
+              <span className={styles.statLabel}>{t('Temperatura')}</span>
               <span className={styles.statValue}>{stats.avgTemperature}°C</span>
             </div>
           </div>
           
           <div className={styles.aqiDistribution}>
-            <h2>Jakość powietrza w Polsce</h2>
-            <div className={styles.aqiBar} role="img" aria-label="Rozkład stacji według jakości powietrza">
+            <h2>{t('Jakość powietrza w Polsce')}</h2>
+            <div className={styles.aqiBar} role="img" aria-label={t('Rozkład stacji według jakości powietrza')}>
               {AQI_LEVEL_LIST.map(({ level, color, label }) => {
                 const count = stats.levels[level] || 0;
                 return (
@@ -234,10 +238,10 @@ export default function StatsPage() {
                     className={styles.aqiSegment}
                     style={{
                       width: `${(count / stats.total * 100)}%`,
-                      backgroundColor: color,
+                      backgroundColor: paletteColor(color),
                       color: getReadableTextColor(color)
                     }}
-                    title={`${label}: ${count}`}
+                    title={`${t(label)}: ${count}`}
                   >
                     {count / stats.total >= MIN_SEGMENT_SHARE_FOR_LABEL && <span>{count}</span>}
                   </div>
@@ -250,8 +254,8 @@ export default function StatsPage() {
                 const count = stats.levels[level] || 0;
                 return (
                   <div key={level} className={styles.legendRow}>
-                    <span className={styles.legendDot} style={{backgroundColor: color}}></span>
-                    <span className={styles.legendLabel}>{label}</span>
+                    <span className={styles.legendDot} style={{backgroundColor: paletteColor(color)}}></span>
+                    <span className={styles.legendLabel}>{t(label)}</span>
                     <span className={styles.legendValue}>{count} <span className={styles.legendShare}>({((count / stats.total) * 100).toFixed(1)}%)</span></span>
                   </div>
                 );
@@ -259,47 +263,45 @@ export default function StatsPage() {
             </div>
 
             <ShareImageButton
-              title="Jakość powietrza w Polsce"
-              text="Rozkład stacji pomiarowych według jakości powietrza (SmogOFF)"
+              title={t('Jakość powietrza w Polsce')}
+              text={t('Rozkład stacji pomiarowych według jakości powietrza (SmogOFF)')}
               render={renderDistribution}
             />
           </div>
 
           {ranked.length > 0 && (
             <div className={styles.rankingSection}>
-              <h2>Ranking punktów pomiarowych</h2>
+              <h2>{t('Ranking punktów pomiarowych')}</h2>
               <p className={styles.rankingNote}>
-                Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5. Pomijamy odczyty poniżej 1 µg/m³.
-                {updatedAt && ` Pomiar z ${updatedAt.slice(0, 16)}.`}
+                {t('Najnowsze dane z sieci czujników (µg/m³), sortowane wg PM2.5. Pomijamy odczyty poniżej 1 µg/m³.')}
+                {updatedAt && ` ${t('Pomiar z {time}.', { time: updatedAt.slice(0, 16) })}`}
               </p>
               <div className={styles.rankingGrid}>
-                {renderRanking(`Top ${cleanest.length} najczystsze`, cleanest, 'ranking-best', rankingShare({ title: 'Najczystsze punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: stationRows(cleanest) }))}
-                {renderRanking(`Top ${dirtiest.length} najbardziej zanieczyszczone`, dirtiest, 'ranking-worst', rankingShare({ title: 'Najbardziej zanieczyszczone punkty pomiarowe', subtitle: STATIONS_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: stationRows(dirtiest) }))}
+                {renderRanking(t('Top {n} najczystsze', { n: cleanest.length }), cleanest, 'ranking-best', rankingShare({ title: t('Najczystsze punkty pomiarowe'), subtitle: STATIONS_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: stationRows(cleanest) }))}
+                {renderRanking(t('Top {n} najbardziej zanieczyszczone', { n: dirtiest.length }), dirtiest, 'ranking-worst', rankingShare({ title: t('Najbardziej zanieczyszczone punkty pomiarowe'), subtitle: STATIONS_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: stationRows(dirtiest) }))}
               </div>
             </div>
           )}
 
           {cities.length > 0 && (
             <div className={styles.rankingSection}>
-              <h2>Ranking miast</h2>
+              <h2>{t('Ranking miast')}</h2>
               <p className={styles.rankingNote}>
-                Mediana odczytów ze wszystkich stacji w mieście (µg/m³), sortowana wg PM2.5.
-                Uwzględniamy miasta z co najmniej {MIN_STATIONS_PER_CITY} stacjami ({cities.length} miast).
-                Mediana jest odporna na pojedyncze błędne czujniki.
+                {t('Mediana odczytów ze wszystkich stacji w mieście (µg/m³), sortowana wg PM2.5. Uwzględniamy miasta z co najmniej {min} stacjami ({count} miast). Mediana jest odporna na pojedyncze błędne czujniki.', { min: MIN_STATIONS_PER_CITY, count: cities.length })}
               </p>
               <div className={styles.rankingGrid}>
-                {renderCityRanking(`Top ${cleanestCities.length} najczystsze miasta`, cleanestCities, 'ranking-cities-best', rankingShare({ title: 'Najczystsze miasta', subtitle: CITIES_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: cityRows(cleanestCities) }))}
-                {renderCityRanking(`Top ${dirtiestCities.length} najbardziej zanieczyszczone miasta`, dirtiestCities, 'ranking-cities-worst', rankingShare({ title: 'Najbardziej zanieczyszczone miasta', subtitle: CITIES_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: cityRows(dirtiestCities) }))}
+                {renderCityRanking(t('Top {n} najczystsze miasta', { n: cleanestCities.length }), cleanestCities, 'ranking-cities-best', rankingShare({ title: t('Najczystsze miasta'), subtitle: CITIES_SUBTITLE, kind: 'najczystsze', accent: BEST, rows: cityRows(cleanestCities) }))}
+                {renderCityRanking(t('Top {n} najbardziej zanieczyszczone miasta', { n: dirtiestCities.length }), dirtiestCities, 'ranking-cities-worst', rankingShare({ title: t('Najbardziej zanieczyszczone miasta'), subtitle: CITIES_SUBTITLE, kind: 'najbardziej zanieczyszczone', accent: WORST, rows: cityRows(dirtiestCities) }))}
               </div>
             </div>
           )}
 
           <div className={styles.aqiLevelsSection}>
-            <h2>Progi jakości powietrza (µg/m³)</h2>
+            <h2>{t('Progi jakości powietrza (µg/m³)')}</h2>
             <table className={styles.levelsTable}>
               <thead>
                 <tr>
-                  <th scope="col">Poziom</th>
+                  <th scope="col">{t('Poziom')}</th>
                   <th scope="col">PM2.5</th>
                   <th scope="col">PM10</th>
                 </tr>
@@ -308,8 +310,8 @@ export default function StatsPage() {
                 {AQI_LEVEL_LIST.map(({ level, color, label }, idx) => (
                   <tr key={level}>
                     <th scope="row">
-                      <span className={styles.levelDot} style={{ backgroundColor: color }} aria-hidden="true"></span>
-                      {label}
+                      <span className={styles.levelDot} style={{ backgroundColor: paletteColor(color) }} aria-hidden="true"></span>
+                      {t(label)}
                     </th>
                     <td>{describeRange('pm25', idx)}</td>
                     <td>{describeRange('pm10', idx)}</td>
@@ -319,12 +321,12 @@ export default function StatsPage() {
             </table>
 
             <p className={styles.rankingNote} style={{ marginTop: '1rem' }}>
-              Progi pochodzą z{' '}
+              {t('Progi pochodzą z')}{' '}
               <a href="https://airindex.eea.europa.eu/AQI/index.html" target="_blank" rel="noopener noreferrer">
-                Europejskiego Indeksu Jakości Powietrza (EAQI)<span className="sr-only"> (otwiera się w nowej karcie)</span>
+                {t('Europejskiego Indeksu Jakości Powietrza (EAQI)')}<span className="sr-only"> {t('(otwiera się w nowej karcie)')}</span>
               </a>
-              {' '}Europejskiej Agencji Środowiska, opartego na wytycznych WHO z 2021 roku. Poziom stacji wyznacza gorszy z dwóch wskaźników (PM2.5 lub PM10).
-              {stats.excludedStale > 0 && ` Pominięto ${stats.excludedStale} stacji z pomiarem starszym niż ${MAX_DATA_AGE_HOURS} h.`}
+              {' '}{t('Europejskiej Agencji Środowiska, opartego na wytycznych WHO z 2021 roku. Poziom stacji wyznacza gorszy z dwóch wskaźników (PM2.5 lub PM10).')}
+              {stats.excludedStale > 0 && ` ${t('Pominięto {count} stacji z pomiarem starszym niż {hours} h.', { count: stats.excludedStale, hours: MAX_DATA_AGE_HOURS })}`}
             </p>
           </div>
         </article>

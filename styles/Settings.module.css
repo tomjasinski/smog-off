@@ -1,0 +1,200 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.dialog {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.dialog h2 {
+  margin: 0 2.5rem 0.25rem 0;
+  font-size: 1.3rem;
+}
+
+.close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--text-3);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--border);
+}
+
+.close:focus-visible,
+.secondary:focus-visible,
+.field select:focus-visible,
+.option input:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.hint {
+  margin: 0 0 0.5rem;
+  color: var(--text-3);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.group {
+  margin: 1rem 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.group legend {
+  padding: 0;
+  margin-bottom: 0.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.option input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--accent);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.5rem;
+}
+
+.field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.field select {
+  min-height: 44px;
+  padding: 0.5rem 0.6rem;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 8px;
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+}
+
+.footerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.secondary {
+  min-height: 44px;
+  margin-top: 0.5rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.footerActions .secondary {
+  margin-top: 0;
+}
+
+.secondary:hover {
+  background: var(--surface-3);
+}
+
+/* Przycisk otwierający okno na mapie: w kolumnie kontrolek po lewej, pod zoomem */
+.mapButton {
+  position: absolute;
+  top: 118px;
+  left: 10px;
+  z-index: 600;
+  width: 29px;
+  height: 29px;
+  padding: 0;
+  background: #fff;
+  border: 0;
+  border-radius: 4px;
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapButton:hover {
+  background: #f2f2f2;
+}
+
+.mapButton:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  /* Lokalizacja zeszła do prawego dolnego rogu, więc ustawienia wskakują na jej dawne miejsce */
+  .mapButton {
+    top: 79px;
+  }
+}
+
+/* Duże cele dotykowe: kolumna kontrolek po lewej ma wtedy większy odstęp */
+:global(:root[data-touch='large']) .mapButton {
+  top: 164px;
+  width: 44px;
+  height: 44px;
+}
+
+@media (max-width: 767px) {
+  :global(:root[data-touch='large']) .mapButton {
+    top: 110px;
+  }
+}

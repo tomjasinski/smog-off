@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import styles from '../styles/BlogSheet.module.css';
+import { useT } from '../lib/i18n';
 
 const ROTATE_MS = 6000;
 const DRAG_THRESHOLD_PX = 30;
 
 // Zwinięty: pasek z rotującym tytułem artykułu. Rozwinięty (tap, przeciągnięcie w górę): lista artykułów.
 export default function BlogSheet({ posts }) {
+  const { t } = useT();
   const [open, setOpen] = useState(false);
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
@@ -65,7 +67,7 @@ export default function BlogSheet({ posts }) {
   return (
     <section
       className={`${styles.sheet} ${open ? styles.open : ''}`}
-      aria-label="Wybrane artykuły"
+      aria-label={t('Wybrane artykuły')}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
@@ -84,7 +86,7 @@ export default function BlogSheet({ posts }) {
         <span className={styles.handle} aria-hidden="true" />
         <span className={styles.row}>
           <span key={open ? 'title' : current.slug} className={styles.current}>
-            {open ? 'Artykuły o jakości powietrza' : current.title}
+            {open ? t('Artykuły o jakości powietrza') : <span lang="pl">{current.title}</span>}
           </span>
           <span className={styles.count} aria-hidden="true">{ordered.length}</span>
           <svg className={styles.chevron} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -98,9 +100,9 @@ export default function BlogSheet({ posts }) {
           {ordered.map((post) => (
             <li key={post.slug}>
               <Link href={`/blog/${post.slug}`} className={styles.item}>
-                <span className={styles.itemTitle}>{post.title}</span>
+                <span className={styles.itemTitle} lang="pl">{post.title}</span>
                 {post.excerpt && post.excerpt !== post.title && (
-                  <span className={styles.itemExcerpt}>{post.excerpt}</span>
+                  <span className={styles.itemExcerpt} lang="pl">{post.excerpt}</span>
                 )}
               </Link>
             </li>

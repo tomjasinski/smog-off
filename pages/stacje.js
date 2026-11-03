@@ -4,7 +4,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { cityPageSlugs } from '../lib/cities';
 import CityLink from '../components/CityLink';
 import LevelBadge from '../components/LevelBadge';
+import { paletteColor } from '../lib/aqiLevels';
 import styles from '../styles/StationsPage.module.css';
+import { useT } from '../lib/i18n';
 
 const PAGE_SIZE = 50;
 
@@ -25,6 +27,7 @@ const normalize = (text) =>
     .replace(/[̀-ͯ]/g, '');
 
 export default function StationsPage() {
+  const { t } = useT();
   const [stations, setStations] = useState([]);
   const [status, setStatus] = useState('loading');
   const [query, setQuery] = useState('');
@@ -59,64 +62,64 @@ export default function StationsPage() {
   return (
     <>
       <Head>
-        <title>Lista stacji pomiarowych - SmogOFF</title>
-        <meta name="description" content="Wszystkie stacje pomiarowe jakości powietrza w formie tabeli z wyszukiwaniem po miejscowości, nazwie lub ulicy." />
+        <title>{t('Lista stacji pomiarowych - SmogOFF')}</title>
+        <meta name="description" content={t('Wszystkie stacje pomiarowe jakości powietrza w formie tabeli z wyszukiwaniem po miejscowości, nazwie lub ulicy.')} />
       </Head>
 
       <main className={styles.container}>
-        <Link href="/" className={styles.backLink}>← Powrót do mapy</Link>
+        <Link href="/" className={styles.backLink}>{t('← Powrót do mapy')}</Link>
         {' · '}
-        <Link href="/stats" className={styles.backLink}>Statystyki</Link>
+        <Link href="/stats" className={styles.backLink}>{t('Statystyki')}</Link>
 
         <article className={styles.article}>
-          <h1>Lista stacji pomiarowych</h1>
+          <h1>{t('Lista stacji pomiarowych')}</h1>
           <p className={styles.intro}>
-            Te same dane co na mapie, w formie tabeli. Wpisz miejscowość, nazwę szkoły lub ulicę, żeby zawęzić listę.
+            {t('Te same dane co na mapie, w formie tabeli. Wpisz miejscowość, nazwę szkoły lub ulicę, żeby zawęzić listę.')}
           </p>
 
           <div className={styles.controls}>
             <div className={styles.field}>
-              <label htmlFor="station-search">Szukaj (miejscowość, nazwa, ulica)</label>
+              <label htmlFor="station-search">{t('Szukaj (miejscowość, nazwa, ulica)')}</label>
               <input
                 id="station-search"
                 type="search"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 autoComplete="off"
-                placeholder="np. Poznań"
+                placeholder={t('np. Poznań')}
               />
             </div>
             <div className={styles.field}>
-              <label htmlFor="station-sort">Sortuj</label>
+              <label htmlFor="station-sort">{t('Sortuj')}</label>
               <select id="station-sort" value={sort} onChange={(e) => setSort(e.target.value)}>
                 {Object.entries(SORTS).map(([key, { label }]) => (
-                  <option key={key} value={key}>{label}</option>
+                  <option key={key} value={key}>{t(label)}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          {status === 'loading' && <p role="status">Ładowanie stacji…</p>}
-          {status === 'error' && <p role="alert">Nie udało się załadować stacji. Spróbuj ponownie później.</p>}
+          {status === 'loading' && <p role="status">{t('Ładowanie stacji…')}</p>}
+          {status === 'error' && <p role="alert">{t('Nie udało się załadować stacji. Spróbuj ponownie później.')}</p>}
 
           {status === 'ready' && (
             <>
               <p className={styles.count} role="status" aria-live="polite">
                 {filtered.length === 0
-                  ? 'Brak stacji pasujących do wyszukiwania.'
-                  : `Znaleziono stacji: ${filtered.length}. Wyświetlono: ${shown.length}.`}
+                  ? t('Brak stacji pasujących do wyszukiwania.')
+                  : t('Znaleziono stacji: {found}. Wyświetlono: {shown}.', { found: filtered.length, shown: shown.length })}
               </p>
 
               {filtered.length > 0 && (
                 <div className={styles.tableWrap}>
                   <table className={styles.table}>
                     <caption className="sr-only">
-                      Stacje pomiarowe z odczytami PM2.5 i PM10 w µg/m³ oraz oceną jakości powietrza
+                      {t('Stacje pomiarowe z odczytami PM2.5 i PM10 w µg/m³ oraz oceną jakości powietrza')}
                     </caption>
                     <thead>
                       <tr>
-                        <th scope="col">Stacja i jakość powietrza</th>
-                        <th scope="col" className={styles.cityCol}>Miejscowość</th>
+                        <th scope="col">{t('Stacja i jakość powietrza')}</th>
+                        <th scope="col" className={styles.cityCol}>{t('Miejscowość')}</th>
                         <th scope="col" className={styles.num}>PM2.5</th>
                         <th scope="col" className={styles.num}>PM10</th>
                       </tr>
@@ -124,7 +127,7 @@ export default function StationsPage() {
                     <tbody>
                       {shown.map(s => (
                         <tr key={s.id}>
-                          <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${s.aqi.color}` }}>
+                          <th scope="row" className={styles.stationName} style={{ borderLeft: `6px solid ${paletteColor(s.aqi.color)}` }}>
                             <Link href={{ pathname: '/', query: { station: s.id } }} className={styles.mapLink}>
                               {s.name}
                             </Link>
@@ -133,8 +136,8 @@ export default function StationsPage() {
                             <span className={styles.levelRow}><LevelBadge color={s.aqi.color} label={s.aqi.label} /></span>
                           </th>
                           <td className={styles.cityCol}><CityLink name={s.city} slugs={citySlugs} className={styles.cityLink} /></td>
-                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm25}</td>
-                          <td className={styles.num} style={{ backgroundColor: `${s.aqi.color}40` }}>{s.data.pm10}</td>
+                          <td className={styles.num} style={{ backgroundColor: `${paletteColor(s.aqi.color)}40` }}>{s.data.pm25}</td>
+                          <td className={styles.num} style={{ backgroundColor: `${paletteColor(s.aqi.color)}40` }}>{s.data.pm10}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -144,7 +147,7 @@ export default function StationsPage() {
 
               {shown.length < filtered.length && (
                 <button type="button" className={styles.moreButton} onClick={() => setVisible(v => v + PAGE_SIZE)}>
-                  Pokaż więcej ({filtered.length - shown.length} pozostało)
+                  {t('Pokaż więcej ({count} pozostało)', { count: filtered.length - shown.length })}
                 </button>
               )}
             </>

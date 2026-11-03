@@ -488,3 +488,27 @@
     height: 52px;
   }
 }
+
+/* Informacje pogodowe w szczegółach stacji: trzy kafelki zawsze w jednym rzędzie */
+.weatherGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin: -0.5rem 0 1.5rem;
+}
+
+.weatherGrid .dataItem {
+  min-width: 0;
+  padding: 0.7rem 0.5rem;
+  gap: 0.3rem;
+}
+
+.weatherGrid .label {
+  font-size: 0.7rem;
+  overflow-wrap: normal;
+}
+
+.weatherGrid .value {
+  font-size: clamp(0.95rem, 4.2vw, 1.25rem);
+  white-space: nowrap;
+}

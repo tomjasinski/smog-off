@@ -629,7 +629,10 @@ export default function SmogMap({ posts }) {
                   {selectedStation.data.pm10.toFixed(1)} µg/m³
                 </span>
               </div>
-              
+            </div>
+
+            {/* Pogoda: zawsze w jednym rzędzie */}
+            <div className={styles.weatherGrid}>
               <div className={styles.dataItem}>
                 <span className={styles.label}>{t('🌡️ Temperatura')}</span>
                 <span className={styles.value}>{selectedStation.data.temperature.toFixed(1)}°C</span>

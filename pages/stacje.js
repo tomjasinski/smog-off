@@ -74,10 +74,6 @@ export default function StationsPage() {
 
         <article className={styles.article}>
           <h1>{t('Lista stacji pomiarowych')}</h1>
-          <p className={styles.intro}>
-            {t('Te same dane co na mapie, w formie tabeli. Wpisz miejscowość, nazwę szkoły lub ulicę, żeby zawęzić listę.')}
-          </p>
-
           <div className={styles.controls}>
             <div className={styles.field}>
               <label htmlFor="station-search">{t('Szukaj (miejscowość, nazwa, ulica)')}</label>

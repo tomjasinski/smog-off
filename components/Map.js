@@ -608,6 +608,15 @@ export default function SmogMap({ posts }) {
             </button>
 
             <h2 id="station-dialog-title">{selectedStation.name}</h2>
+
+            <p className={styles.location}>
+              <span aria-hidden="true">📍</span>
+              <span>
+                <strong>{t('Lokalizacja:')}</strong>{' '}
+                {selectedStation.street && `${selectedStation.street}, `}
+                <CityLink name={selectedStation.city} slugs={citySlugs} className={styles.cityLink} />
+              </span>
+            </p>
             
             <div 
               className={styles.statusBadge} 
@@ -691,11 +700,6 @@ export default function SmogMap({ posts }) {
 
             <WhoNote pm25={selectedStation.data.pm25} pm10={selectedStation.data.pm10} />
 
-            <div className={styles.location}>
-              <p><strong>{t('📍 Lokalizacja:')}</strong></p>
-              <p><CityLink name={selectedStation.city} slugs={citySlugs} className={styles.cityLink} /></p>
-              {selectedStation.street && <p>{selectedStation.street}</p>}
-            </div>
             <StationArticles level={selectedStation.aqi.level} posts={posts} />
 
 
